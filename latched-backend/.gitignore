@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+
+# Supabase local CLI state
+.supabase/
+supabase/.branches
+supabase/.temp
+supabase/functions/**/*.js.map
+
+# Claude local settings
+.claude/

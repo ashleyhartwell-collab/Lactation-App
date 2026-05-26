@@ -1,0 +1,23 @@
+{
+  "name": "latched-backend",
+  "version": "0.1.0",
+  "description": "Supabase backend for the Latched lactation support app: FAQ embedding pipeline and semantic search API.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "embed": "node scripts/embed-faq.js",
+    "embed:dry": "node scripts/embed-faq.js --dry-run",
+    "db:reset": "supabase db reset",
+    "functions:serve": "supabase functions serve semantic-search --env-file .env",
+    "functions:deploy": "supabase functions deploy semantic-search"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5",
+    "openai": "^4.67.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
