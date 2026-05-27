@@ -3,4 +3,5 @@
 .env.local
 node_modules/
 .supabase/
+/supabase/
 .claude/
