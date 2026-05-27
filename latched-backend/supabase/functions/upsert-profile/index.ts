@@ -1,9 +1,9 @@
 // Latched — upsert-profile Edge Function
 //
-// POST { display_name?, baby_dob, feeding_preference?, breast_anatomy? }
+// POST { display_name?, baby_dob, feeding_preference?, breast_anatomy?, pump_models? }
 //   Authorization: Bearer <supabase_jwt>
 //   -> { profile: { id, display_name, baby_dob, feeding_preference,
-//                   breast_anatomy, weeks_postpartum, onboarding_complete } }
+//                   breast_anatomy, pump_models, weeks_postpartum, onboarding_complete } }
 //
 // Creates or updates the caller's user_profile row. Sets onboarding_complete=true
 // when both display_name and baby_dob are present.
@@ -17,9 +17,16 @@
 //   Pass an empty array [] to clear all conditions.
 //   Omit the field entirely to leave existing conditions unchanged.
 //
+// pump_models: optional array of specific pump model strings.
+//   Each element must be one of the values in VALID_PUMP_MODELS below.
+//   Pass an empty array [] to clear all recorded pumps.
+//   Omit the field entirely to leave existing pumps unchanged.
+//   Multiple models are supported — it is common for moms to own more than one pump.
+//
 // Returns 401 if the JWT is missing or invalid.
 // Returns 400 if baby_dob is missing or in the future.
 // Returns 400 if breast_anatomy contains invalid condition or laterality values.
+// Returns 400 if pump_models contains an unrecognised model string.
 
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -34,7 +41,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-// Valid anatomy condition identifiers — kept in sync with the Loveable frontend
+// Valid anatomy condition identifiers — kept in sync with the Lovable frontend
 // and migration 00007 comment block.
 const VALID_CONDITIONS = new Set([
   'flat_nipples',
@@ -51,6 +58,46 @@ const VALID_CONDITIONS = new Set([
 ]);
 
 const VALID_LATERALITY = new Set(['left', 'right', 'both']);
+
+// Valid pump model strings — kept in sync with migration 00009 comment block
+// and the Lovable onboarding Screen 7 component.
+const VALID_PUMP_MODELS = new Set([
+  // Spectra
+  'Spectra S1 Plus',
+  'Spectra S2 Plus',
+  'Spectra Synergy Gold',
+  'Spectra Synergy Gold Portable',
+  'Spectra 9 Plus',
+  'Spectra CaraCups',
+  // Medela
+  'Medela Pump In Style Pro',
+  'Medela Freestyle Hands-free',
+  'Medela Solo',
+  'Medela Swing Maxi',
+  'Medela Symphony (Hospital-Grade)',
+  'Medela Harmony (Manual)',
+  // Elvie
+  'Elvie Pump',
+  'Elvie Stride',
+  'Elvie Stride 2',
+  'Elvie Curve (Manual)',
+  // Willow
+  'Willow 360',
+  'Willow Go',
+  'Willow Wave 2-in-1 (Manual)',
+  // Momcozy
+  'Momcozy M5',
+  'Momcozy M9 Mobile Flow',
+  'Momcozy M6 Mobile Style',
+  'Momcozy S12 Pro',
+  'Momcozy Air 1',
+  // BabyBuddha
+  'BabyBuddha 2.0',
+  'BabyBuddha Wearable Breast Pump',
+  'BabyBuddha Manual',
+  // Catch-all
+  'Other',
+]);
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -69,6 +116,7 @@ interface UpsertBody {
   baby_dob?: string;
   feeding_preference?: string;
   breast_anatomy?: AnatomyItem[];
+  pump_models?: string[];
 }
 
 function validateBreastAnatomy(items: unknown): { valid: true; data: AnatomyItem[] } | { valid: false; error: string } {
@@ -97,6 +145,22 @@ function validateBreastAnatomy(items: unknown): { valid: true; data: AnatomyItem
   return { valid: true, data: items as AnatomyItem[] };
 }
 
+function validatePumpModels(items: unknown): { valid: true; data: string[] } | { valid: false; error: string } {
+  if (!Array.isArray(items)) {
+    return { valid: false, error: 'pump_models must be an array' };
+  }
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (typeof item !== 'string') {
+      return { valid: false, error: `pump_models[${i}] must be a string` };
+    }
+    if (!VALID_PUMP_MODELS.has(item)) {
+      return { valid: false, error: `pump_models[${i}] "${item}" is not a recognised pump model` };
+    }
+  }
+  return { valid: true, data: items as string[] };
+}
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -120,7 +184,7 @@ serve(async (req: Request) => {
     return json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const { display_name, baby_dob, feeding_preference, breast_anatomy } = body;
+  const { display_name, baby_dob, feeding_preference, breast_anatomy, pump_models } = body;
 
   if (!baby_dob) return json({ error: 'baby_dob is required' }, 400);
 
@@ -137,6 +201,14 @@ serve(async (req: Request) => {
     validatedAnatomy = result.data;
   }
 
+  // Validate pump_models if provided
+  let validatedPumpModels: string[] | undefined;
+  if (pump_models !== undefined) {
+    const result = validatePumpModels(pump_models);
+    if (!result.valid) return json({ error: result.error }, 400);
+    validatedPumpModels = result.data;
+  }
+
   const onboarding_complete = Boolean(display_name && baby_dob);
 
   const serviceClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
@@ -151,11 +223,12 @@ serve(async (req: Request) => {
   if (display_name !== undefined) upsertData.display_name = display_name;
   if (feeding_preference !== undefined) upsertData.feeding_preference = feeding_preference;
   if (validatedAnatomy !== undefined) upsertData.breast_anatomy = validatedAnatomy;
+  if (validatedPumpModels !== undefined) upsertData.pump_models = validatedPumpModels;
 
   const { data: profile, error: upsertError } = await serviceClient
     .from('user_profiles')
     .upsert(upsertData, { onConflict: 'id' })
-    .select('id, display_name, baby_dob, feeding_preference, breast_anatomy, onboarding_complete')
+    .select('id, display_name, baby_dob, feeding_preference, breast_anatomy, pump_models, onboarding_complete')
     .single();
 
   if (upsertError) {

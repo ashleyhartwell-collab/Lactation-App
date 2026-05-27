@@ -77,6 +77,39 @@ interface SearchRequest {
   user_id?: string;
 }
 
+// Keywords that flag a question as pump-related and eligible for the
+// multi-pump clarification check.
+const PUMP_KEYWORDS = [
+  'pump', 'flange', 'suction', 'wearable', 'valve', 'membrane', 'tubing',
+  'backflow', 'letdown', 'let-down', 'spectra', 'medela', 'elvie', 'willow',
+  'momcozy', 'babybuddha', 'baby buddha', 'output per', 'oz per', 'ounce per',
+];
+
+// Returns true if the question text looks pump-related.
+function isPumpRelatedQuestion(question: string): boolean {
+  const lower = question.toLowerCase();
+  return PUMP_KEYWORDS.some((term) => lower.includes(term));
+}
+
+// Returns true if the question already names one of the user's specific pump brands,
+// meaning no clarification is needed.
+function mentionsSpecificPump(question: string, pumpModels: string[]): boolean {
+  const lower = question.toLowerCase();
+  return pumpModels.some((model) => {
+    // Use the brand name (first word of the model string) as the match key.
+    // Brand names are always the first word: Spectra, Medela, Elvie, Willow,
+    // Momcozy, BabyBuddha — all 5+ chars and distinct enough to match safely.
+    const brand = model.split(' ')[0].toLowerCase();
+    return brand.length >= 4 && lower.includes(brand);
+  });
+}
+
+// Format a pump_models text[] into a user-context string.
+function formatPumpContext(pumpModels: string[]): string {
+  if (pumpModels.length === 1) return `User's pump: ${pumpModels[0]}.`;
+  return `User's pumps: ${pumpModels.join(', ')}.`;
+}
+
 interface ResultItem {
   sub_question: string;
   faq_id: string;
@@ -104,8 +137,10 @@ function formatAnatomyContext(anatomy: Array<{ condition: string; laterality: st
 }
 
 async function decomposeQuestion(question: string, anatomyContext: string | null): Promise<string[]> {
+  // anatomyContext may contain anatomy conditions, a pump model, or both —
+  // callers compose it before passing in.
   const anatomyNote = anatomyContext
-    ? `\n\nUser context — breast anatomy conditions reported by this user: ${anatomyContext}. Use this context to interpret questions about supply, latch, or discomfort more precisely. Do not add sub-questions about anatomy that the user did not ask about.`
+    ? `\n\nUser context: ${anatomyContext} Use this context to interpret questions about supply, latch, discomfort, or pump-specific issues more precisely. Do not add sub-questions about topics the user did not ask about.`
     : '';
 
   try {
@@ -312,21 +347,66 @@ serve(async (req: Request) => {
   // is preserved even if downstream steps fail.
   await writeChatMessage({ user_id, session_id, role: 'user', content: question });
 
-  // Step 2b: Fetch user anatomy context (non-blocking — failure silently skips context).
+  // Step 2b: Fetch user anatomy and pump context (non-blocking — failure silently skips context).
   let anatomyContext: string | null = null;
+  let userPumpModels: string[] = [];
   if (user_id) {
     const { data: profileData } = await supabase
       .from('user_profiles')
-      .select('breast_anatomy')
+      .select('breast_anatomy, pump_models')
       .eq('id', user_id)
       .maybeSingle();
     const anatomy = profileData?.breast_anatomy as Array<{ condition: string; laterality: string }> | null;
+    const pumpModels = profileData?.pump_models as string[] | null;
+
+    if (Array.isArray(pumpModels) && pumpModels.length > 0) {
+      userPumpModels = pumpModels;
+    }
+
+    const contextParts: string[] = [];
     if (Array.isArray(anatomy) && anatomy.length > 0) {
-      anatomyContext = formatAnatomyContext(anatomy);
+      contextParts.push(formatAnatomyContext(anatomy));
+    }
+    if (userPumpModels.length > 0) {
+      contextParts.push(formatPumpContext(userPumpModels));
+    }
+    if (contextParts.length > 0) {
+      anatomyContext = contextParts.join(' ');
     }
   }
 
-  // Step 3: Decompose into atomic sub-questions (with anatomy context when available)
+  // Step 2c: Multi-pump clarification check.
+  // If the user has recorded more than one pump, the question is pump-related,
+  // and they haven't named a specific pump in their message, ask which pump they
+  // mean before running the full search pipeline. This avoids returning generic
+  // answers when brand-specific guidance exists.
+  if (
+    userPumpModels.length > 1 &&
+    isPumpRelatedQuestion(question) &&
+    !mentionsSpecificPump(question, userPumpModels)
+  ) {
+    const clarificationQuestion =
+      `You have ${userPumpModels.length} pumps in your profile — ${userPumpModels.join(' and ')}. ` +
+      `Which pump are you asking about?`;
+
+    await writeChatMessage({
+      user_id,
+      session_id,
+      role: 'assistant',
+      results: [],
+      matched: false,
+      contradiction_warning: null,
+    });
+
+    return json({
+      matched: false,
+      clarification_needed: true,
+      clarification_question: clarificationQuestion,
+      pump_options: userPumpModels,
+    });
+  }
+
+  // Step 3: Decompose into atomic sub-questions (with user context when available)
   const subQuestions = await decomposeQuestion(question, anatomyContext);
 
   // Steps 4 & 5: embed + search in parallel
