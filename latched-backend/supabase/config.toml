@@ -50,5 +50,14 @@ enable_confirmations = false
 [functions.semantic-search]
 verify_jwt = false
 
+[functions.upsert-profile]
+verify_jwt = false
+
+[functions.get-profile]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
 [analytics]
 enabled = false

@@ -7,6 +7,10 @@
   "scripts": {
     "embed": "node scripts/embed-faq.js",
     "embed:dry": "node scripts/embed-faq.js --dry-run",
+    "generate-variants": "node scripts/generate-variants.js",
+    "generate-variants:dry": "node scripts/generate-variants.js --dry-run",
+    "test": "node --test tests/semantic-search.test.js",
+    "test:auth": "node --test tests/auth.test.js",
     "db:reset": "supabase db reset",
     "functions:serve": "supabase functions serve semantic-search --env-file .env",
     "functions:deploy": "supabase functions deploy semantic-search"
@@ -14,6 +18,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.5.0",
     "dotenv": "^16.4.5",
     "openai": "^4.67.0"
   },

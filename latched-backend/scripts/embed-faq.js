@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Embed the Latched FAQ CSV into Supabase + pgvector.
+// Embed the Latched FAQ CSV into Supabase via per-variant embeddings (v2).
 //
-// Reads smart-faq.csv, joins each row's question_variants with the answer
-// context, embeds via OpenAI text-embedding-3-small (1536 dims), and upserts
-// into public.faq_entries keyed on external_id.
+// For each FAQ row, embeds each question_variant separately and upserts
+// them into the faq_variants table. Also upserts the parent row into
+// faq_entries (no embedding column — dropped in migration 00003).
 //
 // Usage:
 //   node scripts/embed-faq.js              # embed and upsert
-//   node scripts/embed-faq.js --dry-run    # parse + print, no API calls, no writes
+//   node scripts/embed-faq.js --dry-run    # parse + print, no API calls
 
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -25,10 +25,7 @@ const BATCH_SIZE = 20;
 
 function requireEnv(name) {
   const v = process.env[name];
-  if (!v) {
-    console.error(`Missing required env var: ${name}`);
-    process.exit(1);
-  }
+  if (!v) { console.error(`Missing required env var: ${name}`); process.exit(1); }
   return v;
 }
 
@@ -39,25 +36,12 @@ function resolveCsvPath() {
 
 function splitVariants(raw) {
   if (!raw) return [];
-  return raw
-    .split(/\r?\n|\||;/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  return raw.split(/\r?\n|\||;/).map((s) => s.trim()).filter(Boolean);
 }
 
 function parseBool(v) {
   if (v === undefined || v === null) return false;
-  const s = String(v).trim().toLowerCase();
-  return s === 'yes' || s === 'true' || s === '1' || s === 'y';
-}
-
-function buildEmbeddingInput(row) {
-  // Join the variants so the embedding captures every phrasing a mom might
-  // use, and include the category + a short slice of the answer to give the
-  // vector richer semantic context.
-  const variants = row.question_variants.join(' | ');
-  const answerSnippet = (row.answer || '').slice(0, 400);
-  return `Category: ${row.category}\nQuestions: ${variants}\nAnswer: ${answerSnippet}`;
+  return ['yes', 'true', '1', 'y'].includes(String(v).trim().toLowerCase());
 }
 
 function readRows(csvPath) {
@@ -83,27 +67,21 @@ function readRows(csvPath) {
 }
 
 async function embedBatch(openai, inputs) {
-  const res = await openai.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: inputs,
-  });
+  const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: inputs });
   return res.data.map((d) => d.embedding);
 }
 
 async function main() {
   const csvPath = resolveCsvPath();
   console.log(`Reading FAQ CSV from: ${csvPath}`);
-
   const rows = readRows(csvPath);
   console.log(`Parsed ${rows.length} FAQ rows.`);
 
   if (DRY_RUN) {
     console.log('--dry-run: skipping OpenAI + Supabase calls.');
-    console.log('Sample embedding input for first row:\n');
-    console.log(buildEmbeddingInput(rows[0]));
-    console.log('\nFirst 3 parsed rows:');
     for (const r of rows.slice(0, 3)) {
-      console.log({ ...r, answer: r.answer.slice(0, 80) + '...' });
+      console.log(`  ${r.external_id}: ${r.question_variants.length} variants`);
+      r.question_variants.forEach((v, i) => console.log(`    [${i}] ${v}`));
     }
     return;
   }
@@ -115,41 +93,73 @@ async function main() {
     { auth: { persistSession: false } },
   );
 
-  let processed = 0;
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    const batch = rows.slice(i, i + BATCH_SIZE);
-    const inputs = batch.map(buildEmbeddingInput);
+  // Step 1: upsert parent FAQ rows (no embedding column after migration 00003)
+  const faqRecords = rows.map((r) => ({
+    external_id: r.external_id,
+    category: r.category,
+    question_variants: r.question_variants,
+    answer: r.answer,
+    escalation_trigger: r.escalation_trigger,
+    escalation_text: r.escalation_text,
+    confidence_tier: r.confidence_tier,
+    advisor_reviewed: r.advisor_reviewed,
+  }));
 
-    console.log(`Embedding batch ${i / BATCH_SIZE + 1} (${batch.length} rows)...`);
-    const vectors = await embedBatch(openai, inputs);
+  console.log('Upserting FAQ entries...');
+  const { error: faqError } = await supabase
+    .from('faq_entries')
+    .upsert(faqRecords, { onConflict: 'external_id' });
+  if (faqError) { console.error('faq_entries upsert failed:', faqError); process.exit(1); }
 
-    if (vectors.some((v) => v.length !== EMBEDDING_DIMS)) {
-      throw new Error(`Unexpected embedding dimension; expected ${EMBEDDING_DIMS}.`);
+  // Fetch all IDs so we can link variants
+  const { data: faqEntries, error: fetchError } = await supabase
+    .from('faq_entries')
+    .select('id, external_id');
+  if (fetchError) { console.error('Failed to fetch faq_entries:', fetchError); process.exit(1); }
+
+  const idByExternal = Object.fromEntries((faqEntries || []).map((r) => [r.external_id, r.id]));
+
+  // Step 2: embed each variant separately
+  let totalVariants = 0;
+  for (const row of rows) {
+    const faqId = idByExternal[row.external_id];
+    if (!faqId) { console.warn(`No id found for ${row.external_id}, skipping`); continue; }
+
+    const variants = row.question_variants;
+    if (!variants.length) { console.warn(`No variants for ${row.external_id}, skipping`); continue; }
+
+    // Delete existing variants for this FAQ to prevent duplicates on re-run
+    const { error: delError } = await supabase
+      .from('faq_variants')
+      .delete()
+      .eq('faq_id', faqId);
+    if (delError) { console.error(`Failed to delete old variants for ${row.external_id}:`, delError); process.exit(1); }
+
+    // Embed in sub-batches
+    for (let i = 0; i < variants.length; i += BATCH_SIZE) {
+      const batch = variants.slice(i, i + BATCH_SIZE);
+      const vectors = await embedBatch(openai, batch);
+
+      if (vectors.some((v) => v.length !== EMBEDDING_DIMS)) {
+        throw new Error(`Unexpected embedding dimension for ${row.external_id}`);
+      }
+
+      const variantRecords = batch.map((text, idx) => ({
+        faq_id: faqId,
+        variant_text: text,
+        embedding: `[${vectors[idx].join(',')}]`,
+      }));
+
+      const { error: varError } = await supabase.from('faq_variants').insert(variantRecords);
+      if (varError) { console.error(`Failed to insert variants for ${row.external_id}:`, varError); process.exit(1); }
+
+      totalVariants += batch.length;
     }
 
-    const records = batch.map((row, idx) => ({
-      ...row,
-      // pgvector accepts the bracketed string literal form over PostgREST.
-      embedding: `[${vectors[idx].join(',')}]`,
-    }));
-
-    const { error } = await supabase
-      .from('faq_entries')
-      .upsert(records, { onConflict: 'external_id' });
-
-    if (error) {
-      console.error('Upsert failed:', error);
-      process.exit(1);
-    }
-
-    processed += batch.length;
-    console.log(`  upserted ${processed}/${rows.length}`);
+    console.log(`  ${row.external_id}: ${variants.length} variants embedded`);
   }
 
-  console.log(`Done. Embedded and upserted ${processed} FAQ rows.`);
+  console.log(`Done. Embedded ${totalVariants} variants across ${rows.length} FAQ rows.`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main().catch((err) => { console.error(err); process.exit(1); });
