@@ -1,0 +1,62 @@
+# GitLab CI — Playwright E2E tests for Latched
+#
+# WHEN IT RUNS
+# ------------
+# • Merge requests → automatically (catches regressions before merging)
+# • Nightly schedule → automatically (catches Lovable drift overnight)
+# • Main branch push → manual trigger only (Lovable auto-commits constantly;
+#   running on every push would burn CI minutes on every editor save)
+# • GitLab UI "Run pipeline" button → always
+#
+# SETUP REQUIRED (one-time)
+# -------------------------
+# GitLab → Settings → CI/CD → Variables → add these as Masked:
+#   SUPABASE_SERVICE_ROLE_KEY   (service_role key — admin access, keep secret)
+#   SUPABASE_ANON_KEY           (anon/public key)
+#
+# To set up the nightly schedule:
+#   GitLab → Build → Pipeline schedules → New schedule → "0 6 * * *" (06:00 UTC)
+
+stages:
+  - test
+
+e2e:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.44.0-jammy
+
+  rules:
+    # Always run on merge requests
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Always run on scheduled pipelines (nightly)
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    # Always run when triggered manually via GitLab UI
+    - if: $CI_PIPELINE_SOURCE == "web"
+    # On direct pushes to main, require a manual click to run
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: true   # don't block the pipeline from green if skipped
+
+  variables:
+    # Non-secret vars — safe to hardcode here
+    APP_URL: "https://mama-milk-map.lovable.app"
+    SUPABASE_URL: "https://owxrfpqyjsevwkbythrw.supabase.co"
+    # SUPABASE_SERVICE_ROLE_KEY and SUPABASE_ANON_KEY come from GitLab CI variables
+    # (set them there — do not add them here)
+
+  before_script:
+    - cd e2e
+    - npm ci
+
+  script:
+    - npx playwright test
+
+  artifacts:
+    # Always upload the report — especially useful when tests fail
+    when: always
+    paths:
+      - e2e/playwright-report/
+    expire_in: 14 days
+    expose_as: "Playwright E2E Report"
+
+  # AI chat tests can take up to 30s per response × 6 questions = generous headroom needed
+  timeout: 20 minutes
