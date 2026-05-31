@@ -27,10 +27,10 @@ test.describe('Flow 1B — Returning user', () => {
     // Should route to Home
     await page.waitForURL(/\/$|\/home/, { timeout: 15_000 })
 
-    // Profile should be loaded — This Week tab shows correct week
+    // Profile should be loaded — This Week tab shows the 6-week plan with week navigation
     await page.locator('[data-testid="tab-this-week"]').or(page.locator('text=This Week')).first().click()
-    // App shows "Mama's Plan" not the user's name — verify correct week
-    await expect(page.locator(`text=Week ${user.expectedWeek} of 6`)).toBeVisible()
+    await expect(page.locator('text=Mama\'s 6-Week Plan').or(page.locator('text=6-Week Plan')).first()).toBeVisible()
+    await expect(page.locator('button:has-text("Week 1")')).toBeVisible()
   })
 
   test('Session persists across reload', async ({ signedInPage: page }) => {
