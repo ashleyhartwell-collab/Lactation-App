@@ -21,6 +21,7 @@
 //  6. Apply confidence tiering; drop LOW-tier and duplicate faq_ids.
 //  7. Run contradiction check when 2+ results remain.
 //  8. Log to query_log / unmatched_questions; write assistant message row.
+//     Side-effect: detectCompanionSignals (fire-and-forget) writes to companion_signals.
 //  9. Return ordered results.
 //
 // Chat history: both the user message and assistant response are written to
@@ -273,6 +274,128 @@ async function logUnmatched(params: {
   if (error) console.error('unmatched_questions insert failed:', error);
 }
 
+// ─── Companion signal detection ───────────────────────────────────────────────
+//
+// Scans the user's raw question for keywords that indicate a topic the companion
+// layer cares about. Writes matching signal_keys to companion_signals (one row per
+// unique key per call). Called fire-and-forget after the main response is assembled
+// so it never blocks the response.
+//
+// Signal keys are consumed by evaluate-companion-triggers, which matches them
+// against companion_triggers.chat_signal_keywords. The key naming convention is
+// snake_case and designed to be human-readable in the DB.
+
+const SIGNAL_MAP: Record<string, string[]> = {
+  // Supply
+  supply_concern: [
+    'low supply', 'not enough milk', 'milk supply', 'supply dropping', 'supply dipping',
+    'supply issue', 'not producing', 'making enough', 'supply concern', 'supply problem',
+    'increasing supply', 'boost supply', 'build supply', 'supply tanked', 'dried up',
+    'supply decreased', 'less milk', 'supply low',
+  ],
+  // Latch
+  latch_difficulty: [
+    'bad latch', 'latch problem', 'latch issue', 'won\'t latch', 'can\'t latch',
+    'refusing breast', 'breast refusal', 'shallow latch', 'latch pain', 'latching on',
+    'latching correctly', 'getting a good latch', 'difficulty latching', 'keep unlatching',
+    'popping off', 'slides off',
+  ],
+  // Nipple pain / damage
+  nipple_pain: [
+    'nipple pain', 'sore nipples', 'cracked nipple', 'bleeding nipple', 'nipple crack',
+    'nipple blister', 'nipple bleb', 'nipple shield', 'raw nipple', 'nipple damage',
+    'nipple soreness', 'nursing hurts', 'breastfeeding hurts', 'painful to nurse',
+    'burning nipple', 'nipple blister', 'vasospasm',
+  ],
+  // Plugged ducts / mastitis
+  mastitis_signs: [
+    'plugged duct', 'blocked duct', 'clogged duct', 'mastitis', 'hard lump',
+    'lump in breast', 'breast lump', 'painful lump', 'engorgement', 'engorged',
+    'breast infection', 'red streak', 'fever while breastfeeding', 'flu-like symptoms nursing',
+    'abscess',
+  ],
+  // Pumping output
+  pumping_output: [
+    'not getting much', 'pumping so little', 'barely pumping', 'output dropped',
+    'pumping less', 'only getting ounces', 'not pumping enough', 'flange fit',
+    'flange size', 'pumping schedule', 'how often to pump', 'exclusive pumping',
+    'pump output', 'low output', 'nothing when i pump',
+  ],
+  // Returning to work
+  returning_to_work: [
+    'going back to work', 'return to work', 'back at work', 'pumping at work',
+    'pump at the office', 'daycare', 'childcare', 'work schedule', 'pumping schedule work',
+    'store milk for work', 'maternity leave ending', 'leave ending',
+  ],
+  // Weaning
+  weaning_interest: [
+    'stop breastfeeding', 'wean', 'weaning', 'transition to formula',
+    'cutting back nursing', 'stopping nursing', 'done breastfeeding',
+    'how to stop', 'stopping pumping', 'dry up supply', 'decrease feeds',
+    'night weaning', 'wean at night', 'drop a feed', 'drop a pump',
+  ],
+  // Growth spurts / cluster feeding
+  cluster_feeding: [
+    'cluster feed', 'cluster feeding', 'feeding constantly', 'feeding all the time',
+    'nursing every hour', 'feeding nonstop', 'growth spurt', 'always hungry',
+    'won\'t stop feeding', 'fussy after feeding', 'never satisfied',
+  ],
+  // Sleep / night feeds
+  night_feeds: [
+    'night feed', 'feeding at night', 'dream feed', 'night nursing', 'night waking',
+    'sleep through the night', 'sleeping longer', 'dropping night feeds', 'nighttime feed',
+    'how many times at night', 'up every hour', 'nursing to sleep',
+  ],
+  // Supplementing / formula
+  supplementing: [
+    'supplement', 'supplementing', 'add formula', 'use formula', 'combination feeding',
+    'combo feeding', 'mixed feeding', 'formula and breastfeeding', 'donor milk',
+    'top up', 'topping off', 'top-up feed',
+  ],
+  // Solids introduction
+  starting_solids: [
+    'starting solids', 'solid food', 'first foods', 'introducing solids', 'baby led weaning',
+    'when to start solids', 'purée', 'baby food', 'rice cereal', 'iron-rich food',
+    'finger food', '4 months', '6 months food',
+  ],
+  // Milk storage / freezer stash
+  milk_storage: [
+    'freezer stash', 'freeze milk', 'frozen milk', 'milk storage', 'store breast milk',
+    'how long milk lasts', 'refrigerate milk', 'thaw milk', 'warming milk',
+    'bags for milk', 'storage bags', 'how to store milk',
+  ],
+};
+
+// Writes any matching signal_keys to companion_signals. Fire-and-forget — errors
+// are swallowed so they never affect the chat response.
+async function detectCompanionSignals(
+  question: string,
+  userId: string,
+): Promise<void> {
+  const lower = question.toLowerCase();
+  const matchedKeys: string[] = [];
+
+  for (const [signalKey, keywords] of Object.entries(SIGNAL_MAP)) {
+    if (keywords.some((kw) => lower.includes(kw))) {
+      matchedKeys.push(signalKey);
+    }
+  }
+
+  if (matchedKeys.length === 0) return;
+
+  const rows = matchedKeys.map((signal_key) => ({
+    user_id: userId,
+    signal_key,
+    raw_text: question.slice(0, 500), // cap stored text length
+  }));
+
+  const { error } = await supabase.from('companion_signals').insert(rows);
+  if (error) {
+    // Non-fatal — log and continue. The companion layer will catch up on next eval.
+    console.warn('detectCompanionSignals: insert warning:', error.message);
+  }
+}
+
 async function writeChatMessage(params: {
   user_id: string | null;
   session_id: string;
@@ -498,8 +621,16 @@ serve(async (req: Request) => {
   // Step 7: contradiction check
   const contradiction_warning = await checkContradiction(results);
 
-  // Step 8: write assistant response to chat history
+  // Step 8: write assistant response to chat history + companion signal detection
   await writeChatMessage({ user_id, session_id, role: 'assistant', results, matched: true, contradiction_warning });
+
+  // Side-effect: detect companion signals from the user's question (fire-and-forget).
+  // Only runs when user_id is present; non-authenticated sessions produce no signals.
+  if (user_id) {
+    detectCompanionSignals(question, user_id).catch(() => {
+      // Swallow — never let signal detection affect the response.
+    });
+  }
 
   return json({
     matched: true,

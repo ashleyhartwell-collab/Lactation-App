@@ -1,9 +1,15 @@
 // Latched — upsert-profile Edge Function
 //
-// POST { display_name?, baby_dob, feeding_preference?, breast_anatomy?, pump_models? }
+// POST { display_name?, baby_dob, feeding_preference?, feeding_goal?, breast_anatomy?, pump_models? }
 //   Authorization: Bearer <supabase_jwt>
-//   -> { profile: { id, display_name, baby_dob, feeding_preference,
-//                   breast_anatomy, pump_models, weeks_postpartum, onboarding_complete } }
+//   -> { profile: { id, display_name, baby_dob, feeding_preference, feeding_goal,
+//                   feeding_goal_days, breast_anatomy, pump_models,
+//                   weeks_postpartum, onboarding_complete } }
+//
+// feeding_goal: optional enum — 6_weeks | 3_months | 6_months | as_long_as_works | unsure
+//   Stored alongside feeding_goal_days (numeric day count) so the companion trigger
+//   evaluator can run numeric comparisons. 'as_long_as_works' and 'unsure' store 9999
+//   as a sentinel value; goal_comparison triggers skip rows where feeding_goal_days >= 9999.
 //
 // Creates or updates the caller's user_profile row. Sets onboarding_complete=true
 // when both display_name and baby_dob are present.
@@ -58,6 +64,27 @@ const VALID_CONDITIONS = new Set([
 ]);
 
 const VALID_LATERALITY = new Set(['left', 'right', 'both']);
+
+// Valid feeding preference values — kept in sync with migration 00014 CHECK constraint.
+// 'pumping' was renamed to 'exclusive_pumping' in migration 00014 (no real users existed).
+const VALID_FEEDING_PREFERENCES = new Set([
+  'breastfeeding',
+  'exclusive_pumping',
+  'combo',
+  'formula',
+]);
+
+// Valid feeding goal values — kept in sync with migration 00011 CHECK constraint.
+// feeding_goal_days is derived from feeding_goal and stored as a DB column so that
+// the companion trigger evaluator can run numeric comparisons without a CASE statement.
+const FEEDING_GOAL_DAYS: Record<string, number> = {
+  '6_weeks':          42,
+  '3_months':         91,
+  '6_months':         182,
+  'as_long_as_works': 9999, // sentinel: "no fixed end date"
+  'unsure':           9999, // sentinel: goal_comparison triggers skip 9999
+};
+const VALID_FEEDING_GOALS = new Set(Object.keys(FEEDING_GOAL_DAYS));
 
 // Valid pump model strings — kept in sync with migration 00009 comment block
 // and the Lovable onboarding Screen 7 component.
@@ -115,6 +142,7 @@ interface UpsertBody {
   display_name?: string;
   baby_dob?: string;
   feeding_preference?: string;
+  feeding_goal?: string;
   breast_anatomy?: AnatomyItem[];
   pump_models?: string[];
 }
@@ -184,7 +212,7 @@ serve(async (req: Request) => {
     return json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const { display_name, baby_dob, feeding_preference, breast_anatomy, pump_models } = body;
+  const { display_name, baby_dob, feeding_preference, feeding_goal, breast_anatomy, pump_models } = body;
 
   if (!baby_dob) return json({ error: 'baby_dob is required' }, 400);
 
@@ -221,14 +249,32 @@ serve(async (req: Request) => {
     onboarding_complete,
   };
   if (display_name !== undefined) upsertData.display_name = display_name;
-  if (feeding_preference !== undefined) upsertData.feeding_preference = feeding_preference;
+  if (feeding_preference !== undefined) {
+    if (!VALID_FEEDING_PREFERENCES.has(feeding_preference)) {
+      return json(
+        { error: `feeding_preference must be one of: ${[...VALID_FEEDING_PREFERENCES].join(', ')}` },
+        400,
+      );
+    }
+    upsertData.feeding_preference = feeding_preference;
+  }
   if (validatedAnatomy !== undefined) upsertData.breast_anatomy = validatedAnatomy;
   if (validatedPumpModels !== undefined) upsertData.pump_models = validatedPumpModels;
+  if (feeding_goal !== undefined) {
+    if (!VALID_FEEDING_GOALS.has(feeding_goal)) {
+      return json(
+        { error: `feeding_goal must be one of: ${[...VALID_FEEDING_GOALS].join(', ')}` },
+        400,
+      );
+    }
+    upsertData.feeding_goal = feeding_goal;
+    upsertData.feeding_goal_days = FEEDING_GOAL_DAYS[feeding_goal];
+  }
 
   const { data: profile, error: upsertError } = await serviceClient
     .from('user_profiles')
     .upsert(upsertData, { onConflict: 'id' })
-    .select('id, display_name, baby_dob, feeding_preference, breast_anatomy, pump_models, onboarding_complete')
+    .select('id, display_name, baby_dob, feeding_preference, feeding_goal, feeding_goal_days, breast_anatomy, pump_models, onboarding_complete')
     .single();
 
   if (upsertError) {
