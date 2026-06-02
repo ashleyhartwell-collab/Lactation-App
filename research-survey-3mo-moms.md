@@ -13,7 +13,7 @@
 > Hi — I'm Ashley, a mom and product researcher. I'm trying to understand what real moms experienced during early breastfeeding — what worked, what didn't, and what you wish had existed. This is not a sales pitch. There's nothing to buy at the end.
 >
 > A few notes before you start:
-> - It takes about 15 minutes.
+> - It takes about 15–20 minutes.
 > - All responses are confidential. Don't include your full name or your baby's name anywhere.
 > - There are no right answers. If you stopped early, switched to formula, combo-fed, or never tried breastfeeding at all — your experience is exactly what I want to hear. I am not looking for a "success story."
 > - Skip anything that feels too personal.
@@ -24,44 +24,119 @@
 
 ## Section 1 — About you and your baby
 
-1. How old is your baby right now? *(months)*
+1. How old is your baby right now? *(weeks or months)*
+
 2. Is this your first baby?
    - Yes
    - No — how many older children?
-3. Tell me briefly about your birth experience. Was your baby full-term, early, late? Vaginal birth or C-section? Anything notable? *(open-ended)*
-4. Did your baby spend any time in the NICU or special-care nursery?
+
+3. How far along was your pregnancy when your baby was born?
+   - Full term (39–40 weeks)
+   - Early term (37–38 weeks)
+   - Premature (before 37 weeks)
+   - Post-term (41+ weeks)
+   - I'm not sure
+
+4. What type of birth did you have?
+   - Vaginal birth
+   - Planned C-section
+   - Emergency C-section
+
+5. Did you have any complications during the pregnancy, delivery, or immediate postpartum period? *(check all that apply)*
+   - Gestational diabetes
+   - IUGR (intrauterine growth restriction)
+   - Gestational hypertension
+   - Pre-eclampsia
+   - Postpartum pre-eclampsia
+   - Other — please explain
+
+6. Anything notable about your birth experience you want to share? *(optional — skip if nothing comes to mind)*
+
+7. Did your baby spend any time in the NICU or special-care nursery?
    - No
    - Yes, less than 48 hours
-   - Yes, several days
-   - Yes, weeks or longer
+   - Yes, 2–7 days
+   - Yes, more than 1 week
+
+8. Did you have any of the following before pregnancy? *(check all that apply)*
+   - Flat or inverted nipples
+   - Breast reduction surgery
+   - Breast augmentation (implants)
+   - Hypoplastic or tubular-shaped breasts
+   - None of the above
+   - Not sure
 
 ---
 
 ## Section 2 — What you wanted
 
-5. When you were pregnant or right after giving birth, what did you want for feeding your baby? *(open-ended — in your own words. Did you want to exclusively breastfeed? Combo feed? Formula? Did you have a duration goal, like "make it to 6 months"?)*
-6. Where did your feeding goals come from? *(family, friends, doctor, social media, your own research, your culture — anything that shaped what you wanted)*
-7. Did your feeding goals change after the baby arrived? If yes, how and why? *(open-ended)*
+9. What was your original feeding goal?
+   - Exclusively breastfeed
+   - Mostly breastfeed, some formula if needed
+   - Combo feed equally
+   - Mostly formula, some breastmilk
+   - Exclusively formula
+   - No specific goal, other than to feed my baby any way possible
+
+10. If your goal was to breastfeed in any form, did you have a duration goal?
+    - No specific timeline
+    - Just get through the first few days
+    - 6 weeks
+    - 3 months
+    - 6 months
+    - 12 months or more
+    - Until baby self-weaned
+
+11. Did your feeding goals change after the baby arrived?
+    - Yes, significantly
+    - Yes, somewhat
+    - No, they stayed about the same
+
+    If yes — how and why did they change? *(open-ended)*
 
 ---
 
 ## Section 3 — What actually happened
 
-8. Tell me about the first 6 weeks of feeding your baby. What was hard? What surprised you? *(open-ended — long answer welcome)*
-9. Are you still breastfeeding (any amount, including pumped milk) right now?
-   - Yes, exclusively breastmilk
-   - Yes, mostly breastmilk with some formula
-   - Yes, but mostly formula with some breastmilk
-   - No, I stopped — at roughly what week did you stop?
-   - I never started or stopped within the first few days
-10. If you stopped breastfeeding earlier than you wanted, what was the main reason? *(open-ended — please use your own words)*
-11. If you DID hit your goals so far, what do you think made the difference? *(open-ended)*
+12. Tell me about the first 6 weeks of feeding your baby. What was hard? What surprised you? *(open-ended — long answer welcome)*
+
+13. Are you still breastfeeding (any amount, including pumped milk) right now?
+    - Yes, exclusively breastmilk
+    - Yes, mostly breastmilk with some formula
+    - Yes, but mostly formula with some breastmilk
+    - No, I stopped — at roughly what week did you stop?
+    - I never started or stopped within the first few days
+
+14. Did you ever feel like you weren't making enough milk?
+    - Yes, and I stopped breastfeeding partly because of it
+    - Yes, but I kept going
+    - I'm not sure / it crossed my mind
+    - No
+
+15. If you stopped breastfeeding earlier than you wanted, what were the main reasons? *(check all that apply)*
+    - Pain or latch problems (while nursing)
+    - Pain or discomfort from pumping (sore nipples, friction, flange fit)
+    - Low milk supply (real or perceived)
+    - Baby wouldn't latch or preferred a bottle
+    - I returned to work / pumping wasn't sustainable
+    - Breast anatomy issues (flat/inverted nipples, etc.)
+    - A health issue on my end
+    - A health issue with the baby
+    - Mental health / burnout
+    - Lack of support from people around me
+    - I hit my goal and was ready to stop
+    - It just wasn't working and I'm not sure why
+    - Other
+
+16. Anything else you want to say about why you stopped? *(optional)*
+
+17. If you DID hit your goals so far, what do you think made the difference? *(open-ended)*
 
 ---
 
 ## Section 4 — Services and support you actually used
 
-12. Which of these did you use for breastfeeding help? *(check all that apply)*
+18. Which of these did you use for breastfeeding help? *(check all that apply)*
     - Hospital lactation consultant (during your hospital stay)
     - Outpatient lactation consultant (IBCLC, in-person, after discharge)
     - Virtual / telehealth lactation consultant (Nest Collaborative, SimpliFed, Mahmee, etc.)
@@ -79,40 +154,55 @@
     - Apps — which ones? *(Huckleberry, Pumpables, Baby Tracker, etc.)*
     - Something else
     - I didn't use any structured support
-13. Roughly how much did you pay out of pocket for breastfeeding support?
-    - $0
-    - Less than $100
-    - $100–$500
-    - $500–$1,500
-    - More than $1,500
-14. Was anything covered by your insurance? Which services? *(open-ended)*
+
+19. How convenient was the support you received?
+    - Very convenient — I received support any time I needed it most
+    - Somewhat convenient
+    - Neutral
+    - Somewhat inconvenient
+    - Very inconvenient — It was difficult to receive support when I needed it most
 
 ---
 
 ## Section 5 — What worked and what didn't
 
-15. Of everything you used, what was the SINGLE MOST helpful thing? Why? *(open-ended)*
-16. What was the LEAST helpful or most frustrating? Why? *(open-ended)*
-17. Were there questions you had that you couldn't get answered — or that took forever to get answered? Give an example if you can remember one. *(open-ended)*
-18. On a scale of 1–10, how supported did you feel overall during your breastfeeding journey?
+20. Of everything you used, what was the SINGLE MOST helpful thing? Why? *(open-ended)*
+
+21. What was the LEAST helpful or most frustrating? Why? *(open-ended)*
+
+22. Were there questions you had that you couldn't get answered — or that took forever to get answered? Give an example if you can remember one. *(open-ended)*
+
+23. On a scale of 1–10, how supported did you feel overall during your breastfeeding journey?
     *(1 = totally alone, 10 = fully supported)*
-19. Why did you pick that number? *(open-ended)*
-20. After using the services you used, did you feel more confident about breastfeeding — or were you still confused and stressed? *(open-ended, not yes/no)*
+
+24. After using the services you used, did you feel more confident about breastfeeding — or were you still confused and stressed? *(open-ended, not yes/no)*
+
+25. When you were breastfeeding or pumping, what were you usually doing on your phone? *(check all that apply)*
+    - Searching for information about breastfeeding
+    - Searching for information about baby care
+    - Scrolling social media
+    - Watching TV or videos
+    - Texting or talking to someone
+    - I wasn't on my phone
+    - Other
 
 ---
 
 ## Section 6 — The hard moments
 
-21. Think back to a moment in the first 6 weeks when you were panicked, exhausted, or really struggling with feeding — maybe in the middle of the night, maybe right after a feed gone wrong. Tell me what happened. *(open-ended)*
-22. In that moment, what did you actually do? Who or what did you turn to? *(open-ended — please be specific: did you Google it, text someone, post on Reddit, wait until morning, call your mom?)*
-23. Did that work? Why or why not? *(open-ended)*
-24. What did you wish was available in that moment? *(open-ended — in your own words, no need to describe a product)*
+26. Think back to a moment in the first 6 weeks when you were panicked, exhausted, or really struggling with feeding — maybe in the middle of the night, maybe right after a feed gone wrong. Tell me what happened. *(open-ended)*
+
+27. In that moment, what did you actually do? Who or what did you turn to? *(open-ended — please be specific: did you Google it, text someone, post on Reddit, wait until morning, call your mom?)*
+
+28. Did that work? Why or why not? *(open-ended)*
+
+29. What did you wish was available in that moment? *(open-ended — in your own words, no need to describe a product)*
 
 ---
 
 ## Section 7 — Knowledge and concepts
 
-25. Before or just after giving birth, which of these did you feel like you actually understood? *(check all you felt comfortable with at the time — not what you eventually learned)*
+30. Before or just after giving birth, which of these did you feel like you actually understood? *(check all you felt comfortable with at the time — not what you eventually learned)*
     - How to get a proper latch
     - Different breastfeeding positions (cross-cradle, football, side-lying, etc.)
     - How much milk a newborn actually needs at different ages
@@ -120,26 +210,42 @@
     - How supply-and-demand works (how your body decides to make more milk)
     - How to use a breast pump
     - How to size pump flanges to your nipples
+    - How to use a lubricant with pump flanges to reduce friction and soreness
     - When and how often to pump, and what pump settings to use
     - What cluster feeding and growth spurts are
     - Signs of mastitis or clogged ducts
     - How to combo feed (breastmilk + formula) without losing supply
     - How breastmilk changes as the baby grows
-26. Of the things you didn't understand at the time, how did you eventually learn them? *(open-ended)*
-27. Looking back, what is the ONE thing you wish someone had taught you about breastfeeding before or right after birth? *(open-ended)*
+
+31. How did you eventually learn the things you didn't know? *(check all that apply)*
+    - Googling / articles
+    - YouTube
+    - Reddit or forums
+    - TikTok or Instagram
+    - An IBCLC or lactation consultant
+    - My doctor or pediatrician
+    - Family or friends
+    - A book
+    - An app
+    - Trial and error / figured it out myself
+    - I still don't feel like I fully learned it
+    - Other
+
+32. Looking back, what is the ONE thing you wish someone had taught you about breastfeeding before or right after birth? *(open-ended)*
 
 ---
 
 ## Section 8 — What you wish existed
 
-28. If you had a magic wand and could create the perfect breastfeeding support experience, what would it look like? *(open-ended — there's no right answer, and it doesn't need to be an app)*
-29. Is there anything else you want me to know about your breastfeeding journey? *(open-ended)*
+33. If you had a magic wand and could create the perfect breastfeeding support experience, what would it look like? *(open-ended — there's no right answer, and it doesn't need to be an app)*
+
+34. Is there anything else you want me to know about your breastfeeding journey? *(open-ended)*
 
 ---
 
 ## Optional — follow-up
 
-30. Would you be open to a 20-minute follow-up phone or Zoom conversation if I have more questions? If yes, what's the best email to reach you?
+35. Would you be open to a 20-minute follow-up phone or Zoom conversation if I have more questions? If yes, what's the best email to reach you?
 
 ---
 
@@ -200,10 +306,15 @@ Open a spreadsheet with the open-ended questions as rows and mom IDs as columns.
 
 ## Step 3 — Pay special attention to
 
-- **Q21–24 (the hard moments)**: this is your 3am wedge validation. If 6+ moms describe being alone, panicked, with no one to turn to in the middle of the night, the wedge is real. If they say "I called my mom and she helped" or "the hospital number worked," the wedge is weaker than you thought.
-- **Q15 vs Q17 (most helpful vs. unanswered questions)**: the gap between these two answers is your product opportunity. If most moms say "the IBCLC was helpful" but also "I couldn't get answers between visits" — that's the async layer being validated by their own words.
-- **Q25 (knowledge gaps)**: if the same 2-3 concepts are checked off as "didn't understand" by 7+ moms, those are your onboarding stepper's top modules. Build for what people actually don't know, not what you assume they don't know.
-- **Q28 (magic wand)**: read carefully. If moms describe a human (more IBCLC time, a doula friend), that's a service business signal — not an app. If they describe a thing (a checklist, a guide, a "what's normal right now" tool), that's an app signal. The distinction matters for your business model.
+- **Q26–29 (the hard moments)**: this is your 3am wedge validation. If 6+ moms describe being alone, panicked, with no one to turn to in the middle of the night, the wedge is real. If they say "I called my mom and she helped" or "the hospital number worked," the wedge is weaker than you thought.
+- **Q20 vs Q22 (most helpful vs. unanswered questions)**: the gap between these two answers is your product opportunity. If most moms say "the IBCLC was helpful" but also "I couldn't get answers between visits" — that's the async layer being validated by their own words.
+- **Q15 (stopping reasons)**: look for clusters. If 7 out of 10 moms who stopped check "low milk supply," that's a very different product problem than if 7 check "returned to work." The structured data here lets you see this at a glance without having to parse prose.
+- **Q30 (knowledge gaps)**: if the same 2-3 concepts are checked off as "didn't understand" by 7+ moms, those are your onboarding stepper's top modules. Build for what people actually don't know, not what you assume they don't know.
+- **Q31 (how they learned)**: cross-reference this with Q30. If moms didn't know something AND they couldn't find it via their normal channels, that's a content gap, not just a product gap.
+- **Q14 (perceived low supply)**: cross-reference with Q15 stopping reasons. If moms checked "low milk supply" as a stopping reason AND answered "yes" to feeling like they weren't making enough, dig into whether this was confirmed or perceived — a key distinction for product positioning.
+- **Q19 (convenience)**: if most moms rate support as inconvenient, that validates async / on-demand delivery. If they rate it convenient but still felt unsupported (Q23), the problem is quality or depth, not access.
+- **Q25 (phone behavior during feeds)**: if moms are already searching for breastfeeding info on their phones during feeds, that's a natural wedge into the behavior you need to build around.
+- **Q33 (magic wand)**: read carefully. If moms describe a human (more IBCLC time, a doula friend), that's a service business signal — not an app. If they describe a thing (a checklist, a guide, a "what's normal right now" tool), that's an app signal. The distinction matters for your business model.
 
 ## Step 4 — Write the synthesis
 
@@ -223,4 +334,4 @@ Ping me with the synthesis when it's done and I'll help you turn it into Experim
 - **Don't pre-pitch the app.** If you tell moms "I'm building an app for X" before they fill out the survey, you'll get answers shaped by what they think you want to hear. Tell them you're "researching breastfeeding experiences." That's true, and it produces better data.
 - **Resist confirmation bias.** Your idea is strongest if you can find the moms it WOULDN'T have helped and understand why. Look for the negative responses on purpose.
 - **One mom = one data point.** If a single response is incredibly compelling and contradicts the others, hold it as a hypothesis to test further, not as the truth.
-- **Watch for "I would have used that" hypotheticals.** Discount them by ~70%. Moms (like everyone) overstate willingness to pay for hypothetical products. The past-behavior questions (Q22) are 10x more reliable than the future-intent questions (Q28).
+- **Watch for "I would have used that" hypotheticals.** Discount them by ~70%. Moms (like everyone) overstate willingness to pay for hypothetical products. The past-behavior questions (Q27) are 10x more reliable than the future-intent questions (Q33).
