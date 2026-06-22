@@ -998,3 +998,129 @@ Smart-FAQ → RAG-with-refusal → tailored model is *one direction*. Each step 
 10. **Combination feeding path — formula framing.** The path now explicitly includes formula. Advisor needs to review the formula-related content carefully for tone (guilt-free, non-prescriptive) and clinical accuracy (safe prep, paced bottle feeding technique). This adds ~3-5 modules to the combination feeding path that weren't scoped in v0.8.
 11. **Direct B2C channel — content marketing and creator strategy.** Who is the voice for direct acquisition? Options: Ashley as founder-face (authentic, zero cost, builds brand equity), postpartum creators/IBCLCs on TikTok/Instagram (paid or rev-share), SEO/blog (slower but compounding). Needs a v1 channel decision before launch.
 12. **Confidence threshold for the smart-FAQ refusal pattern.** Where does the matching model cut over from "return canned answer" to "refuse and escalate"? Too aggressive = poor coverage and a chat that feels broken; too lax = the model returns the wrong vetted answer and we lose the safety property. Needs pre-launch eval set + threshold-tuning pass.
+
+---
+
+## 11. Companion Layer — Anticipatory Guidance, Milestone Memory & Daily Check-In
+
+**Status:** Approved for 90-day build. See `trusted-friend-concept.md` for full council validation. `anticipatory-guidance-library.docx` and `milestone-memory-library.docx` contain the complete message libraries pending Ashley review → real IBCLC review before release.
+
+**Last updated:** 2026-05-31
+
+---
+
+### 11.1 What this is
+
+The companion layer adds three interlocking in-app features that shift Latched from a reactive Q&A tool to an app that *knows the mom over time*. None require open-ended generative AI. All are low clinical risk. Combined, they address the retention and emotional engagement gap between the Smart-FAQ chat (reactive) and the protocol modules (educational).
+
+| Feature | One-line description | Clinical risk | Retention signal |
+|---|---|---|---|
+| **Anticipatory Guidance** | Timeline- and profile-keyed nudges that warn the mom *before* hard moments arrive | Low — content-reviewed, explicit limits | High — earns trust with IBCLCs and pediatricians; provably additive to care |
+| **Milestone Memory** | In-app acknowledgment messages that surface when the mom hits a meaningful moment in her journey | Zero — celebratory, not diagnostic | Highest — Sofia: "every week she stays is a week she's not churning" |
+| **Daily Check-In** | Single-tap mood pulse, max once/day, that gates the rest of the experience and builds an emotional timeline | Low — not clinical triage | High — creates the "memory over time" quality that separates a companion from a search bar |
+
+---
+
+### 11.2 Anticipatory Guidance
+
+**What it is:** 25 clinically-reviewed messages triggered by baby_dob + feeding_preference + pump_model + breast_anatomy profile fields. Arrive before the hard moment, not after. Think: "Growth spurts usually hit around now — here's what that looks like so it doesn't freak you out."
+
+**Full message library:** `anticipatory-guidance-library.docx` (AG-001 through AG-025). Organized in 4 sections: time-based (12), event-based (6), Path B exclusive pumping (4), anatomy profile-based (3).
+
+**Trigger types:**
+
+| Type | Mechanism | Examples |
+|---|---|---|
+| Time-based | `baby_dob` + offset days | Day 1-2, Week 3, Week 6, Week 12 |
+| Event-based (visit) | `baby_dob` + visit-window offset | 2-week visit, 2-month visit |
+| Event-based (chat signal) | NLP keyword detection in chat turns | Supply concern, pain mention, return to work |
+| Profile-based | `feeding_preference`, `pump_model`, `breast_anatomy` | EP-only messages, anatomy-flagged messages |
+
+**Delivery:** In-app nudge that surfaces at next app open (not push notification). Single dismiss. Optionally expandable to Learn More. Escalation path is specific and actionable — never generic "contact a healthcare provider."
+
+**HOLD items (from council review):** AG-016 (supply concern tone — opening paragraph needs revision before release). AG-023 (breast reduction/IGT — specialist IBCLC review required before release).
+
+**Clinical positioning:** Anticipatory Guidance is the feature IBCLCs and pediatricians endorse (see Dr. Keene and Maya in `trusted-friend-concept.md`). It earns the trust that makes the B2B2C channel more durable. Frame it as "IBCLC-reviewed anticipatory guidance" in IBCLC-facing materials.
+
+---
+
+### 11.3 Milestone Memory
+
+**What it is:** 27 in-app acknowledgment messages that surface when a mom hits a meaningful moment in her feeding journey. Not badges. Not push notifications. A message that sounds like a friend who has been paying attention. Organized in 5 categories: time-based (8), feeding events (6), challenges overcome (5), exclusive pumping (4), journey completion (4).
+
+**Full message library:** `milestone-memory-library.docx` (ML-001 through ML-027). Zero HOLD items — all 27 approved for release pending Ashley review.
+
+**Trigger types:**
+
+| Type | Mechanism | Examples |
+|---|---|---|
+| Automatic | `baby_dob` + offset | 1 week, 1 month, 6 weeks, 3 months |
+| Chat-detected | NLP keyword detection | First latch mentioned, mastitis resolved, nursing strike over |
+| Profile-based | `feeding_preference` + `baby_dob` | EP-only: 30 days pumping, first freezer bag |
+| Manual / confirmable | User taps to confirm | First successful latch, first outside-home feed |
+| Goal-comparison | User-stated goal vs. `baby_dob` | ML-024 "reached your goal", ML-025 "extended past goal" |
+
+**Design principles:**
+- Never fire via push notification — always in-app at next open
+- One milestone per session (don't stack multiple unacknowledged milestones)
+- Persistent: mom can find past milestones in a "Your Journey" section (v1.1 feature)
+- ML-024 (reached your goal) is the most personalized milestone and requires goal capture at onboarding — make this a required onboarding field
+- ML-005 (six weeks) and ML-007 (three months) receive premium UI treatment: slightly more prominent card, higher persistence, share card prominently offered
+- ML-027 (final session) gets a "save this moment" affordance — exportable as text or image (v1.1 roadmap)
+
+**The callback mechanic:** Multiple council reviewers flagged surfacing prior chat/milestone context at milestone trigger time as the highest-retention design element (e.g., "A week ago you said you didn't know if you could do this. Look where you are now."). Requires early chat message history to be accessible at trigger evaluation time — engineering dependency to scope in v1.
+
+**Path-dependent variations:** 4 milestones (ML-003, ML-008, ML-012, ML-019) require path-specific message variants. Non-negotiable before any milestone ships.
+
+---
+
+### 11.4 Daily Check-In
+
+**What it is:** A single-tap mood pulse that surfaces once per day when the mom opens the app. Four options: Struggling / Hanging in there / Good day / Small win. Response logs to the user's emotional timeline. The AI can reference prior check-ins: "Yesterday felt rough — how are you doing today compared to that?"
+
+**Design constraints (per Priya's validation feedback):**
+- Maximum one tap. If it takes more than one tap, moms turn it off.
+- Must dismiss instantly and not block access to the rest of the app
+- Can be skipped with a single tap (no guilt for skipping)
+- Should not appear if the mom has already opened the app once today
+
+**What fires from the check-in:**
+
+| Response | AI follow-up |
+|---|---|
+| Struggling | Acknowledging message + relevant Anticipatory Guidance if one is pending; offer to go to chat |
+| Hanging in there | Brief affirming message; surface next protocol module |
+| Good day | Brief affirming message; no further prompting |
+| Small win | Prompt: "Tell me about it" (optional) → if responded to, can trigger a chat-detected milestone |
+
+**Data model:** `daily_checkins` table (see TDD Section 8). Logged per user per day (max 1 row per day). Check-in history available to the semantic-search edge function for continuity context injection.
+
+**Scope at v1:** The follow-up logic above is the target behavior. v1 acceptable minimum: log the response, send a single pre-written follow-up message keyed to the mood, no AI continuity. The continuity ("yesterday felt rough") is a v1.1 feature that requires check-in history to be injected into the decompose prompt.
+
+---
+
+### 11.5 Trigger evaluation system
+
+**How triggers are evaluated:** A Supabase Edge Function (`evaluate-companion-triggers`) runs on a cron schedule (every 6 hours) and on each app open. For each active user, it evaluates:
+
+1. Time-based AG and milestone triggers (compare `baby_dob + offset` to current date)
+2. Profile-based triggers (read `feeding_preference`, `pump_model`, `breast_anatomy` from `user_profiles`)
+3. Pending chat-signal flags (set by `semantic-search` function when NLP detects a trigger keyword)
+4. Goal-comparison triggers (read `feeding_goal` from `user_profiles`)
+
+Results write to a `pending_companion_items` queue table. The React client reads this queue on app open and renders the highest-priority item (AG nudge > milestone > check-in). Items are marked shown after delivery and dequeued.
+
+**NLP chat signal detection:** The `semantic-search` edge function is already the right place to detect trigger keywords. Add a `companion_signal` side-effect: when specific phrases are detected in a chat turn (`mastitis`, `nursing again`, `latch worked`, `supply concern`, `returning to work`, etc.), write a flag to `companion_signals` table. The trigger evaluator reads this table when evaluating event-based triggers.
+
+---
+
+### 11.6 Key decisions for Ashley
+
+| Decision | Options | Recommendation |
+|---|---|---|
+| Goal capture at onboarding | Optional free-text / Required field / Structured pick list | Required structured field — "How long are you hoping to breastfeed?" with options (6 weeks / 3 months / 6 months / As long as it works / Not sure yet) |
+| Callback mechanic scope at v1 | Full callback (references prior chat messages) / Simplified (references prior check-in only) / Deferred to v1.1 | Start with check-in history callback only at v1; full chat history callback in v1.1 |
+| Six-weeks and three-months premium UI | Same card as other milestones / Distinct visual treatment | Distinct visual treatment — slightly larger card, teal accent, prominent share button |
+| Daily Check-In placement | Home screen hero / Bottom sheet on open / Inline in protocol tab | Bottom sheet on open — doesn't block navigation, easy to dismiss |
+| AG delivery method | In-app nudge only / Optional push notification | In-app only for v1; push opt-in offered at 6-week milestone |
+

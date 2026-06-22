@@ -656,9 +656,68 @@ App responses (left-aligned):
 - Left border: 3px solid primary-300 (#A8D5D1)
 - Box shadow: very subtle shadow-sm
 
-IBCLC BADGE (below every app response, left-aligned):
+IBCLC BADGE:
 - Small row: tiny shield emoji (🛡️) + "IBCLC-reviewed" — 12px, primary-700, font-medium
-- Appears on every answered response. Does NOT appear on the no-match fallback.
+- Appears ONCE, left-aligned, below the LAST answer card in a response group. Does NOT appear on the no-match fallback.
+
+---
+
+RESPONSE RENDERING — MOCK API FORMAT:
+
+The mock matching function must return data shaped exactly like the real semantic search API. Structure every return value as one of these two shapes:
+
+Matched (one or more results):
+```
+{
+  matched: true,
+  results: [
+    {
+      sub_question: "short paraphrase of the atomic question that triggered this result",
+      faq_id: "uuid-string",
+      answer: "...",
+      confidence_tier: "HIGH" | "MEDIUM",
+      cosine_score: 0.85,
+      caveat: "optional — only present when confidence_tier is MEDIUM"
+    }
+  ],
+  contradiction_warning: null  // or a string if results suggest conflicting approaches
+}
+```
+
+No match:
+```
+{ matched: false }
+```
+
+For the demo's 20 Q&A pairs, every match returns a single result with confidence_tier "HIGH", no caveat, and contradiction_warning: null. No matches return { matched: false }.
+
+RENDERING RULES — apply these every time a response object arrives:
+
+1. CONTRADICTION BANNER — render first, before any answer cards, only when contradiction_warning is a non-null string:
+   Full-width banner, bg-[#FFF3CD], border border-[#C47F1A], rounded-xl, px-4 py-3, mb-3.
+   Left: ⚠️ icon in warning color (#C47F1A, 16px). Followed by the contradiction_warning text — 14px, neutral-900.
+   This banner sits above all answer cards as a group-level alert.
+
+2. ANSWER CARDS — iterate results[] in order, rendering each as a separate card:
+   Each card uses the same styling as the current app response bubble (left-aligned, bg-white, rounded-2xl rounded-tl-sm, px-4 py-3, max-width 85%, 3px left border primary-300, shadow-sm). Additionally:
+
+   SUB-QUESTION LABEL (conditional):
+   Only show when results.length > 1. When there is exactly 1 result, omit this label entirely — the single-result UI is visually identical to the original single-answer design.
+   When shown: the sub_question string rendered above the answer body — 12px, primary-700, font-semibold, italic, mb-1.
+
+   ANSWER BODY: the answer field — 15px, neutral-900, leading-relaxed (unchanged from before).
+
+   CAVEAT (conditional — only when the result object has a caveat field):
+   Rendered at the bottom of that card only, separated by a thin top border:
+   border-t border-neutral-200, pt-2, mt-2.
+   Text: "⚠️ Note: " + caveat string — 13px, neutral-500, italic.
+   The caveat is scoped to the card it belongs to, not the group.
+
+3. IBCLC BADGE — rendered once, left-aligned, below the final answer card. Not repeated between cards.
+
+4. NO MATCH — matched: false → show the existing no-match fallback (escalation rows). No IBCLC badge. No answer cards.
+
+---
 
 DAY DIVIDERS (between message groups from different days):
 - Centered horizontal rule: thin neutral-200 line, with date text centered inline: "Today" or "Yesterday" or "May 23" etc.
@@ -688,9 +747,10 @@ Day divider: "Today"
 
 MOCK Q&A LIBRARY (20 pairs — the matching function searches these):
 
-Implement a simple matching function: lowercase both the user's input and the question keywords, check for keyword presence using includes() or a simple score. Return the first match. If no match found (score 0), return the no-match response.
+Implement a simple matching function: lowercase both the user's input and the question keywords, check for keyword presence using includes() or a simple score. Return the first match wrapped in the API response shape (see RESPONSE RENDERING above). If no keyword matches (score 0), return { matched: false }.
 
 Here are the 20 Q&A pairs. Store them as an array of objects: { keywords: [...], answer: "..." }
+The matching function wraps a hit in: { matched: true, results: [{ sub_question: <paraphrase of the user's question>, faq_id: <any uuid string>, answer: <the answer text>, confidence_tier: "HIGH", cosine_score: 0.92 }], contradiction_warning: null }
 
 --- PAIR 1 ---
 keywords: ["latch", "good latch", "latching", "latch on", "latched"]
@@ -804,8 +864,13 @@ On submit:
 1. Add the user message to chatHistory
 2. Clear the input
 3. Show typing indicator (3 animated dots) for 1.2 seconds
-4. Run the matching function against the 20 Q&A pairs
-5. Display the matched answer (or no-match fallback) with the IBCLC badge
+4. Run the matching function against the 20 Q&A pairs — it returns the API-shaped response object
+5. Process the response object using the RESPONSE RENDERING rules above:
+   - If matched: false → show the no-match fallback (escalation rows, no IBCLC badge)
+   - If matched: true →
+     a. If contradiction_warning is a non-null string, render the amber banner first
+     b. Iterate results[] and render each as an answer card (sub_question label only when results.length > 1; caveat block only when the result has a caveat field)
+     c. Render the IBCLC badge once, below the last answer card
 
 Make sure the message list scrolls to the bottom automatically after each new message.
 
@@ -820,14 +885,18 @@ Store chatHistory in AppContext so it persists when navigating away and coming b
 **Done looks like:**
 - [ ] Chat opens with the "Ask anything." empty state and 5 suggested question chips
 - [ ] Tapping a chip submits that question and shows a 1.2s typing indicator then an answer
-- [ ] The answer has a 3px left border in `#A8D5D1` and an IBCLC badge below it
-- [ ] Typing "latch" or "good latch" returns the latch answer (Pair 1)
+- [ ] The answer has a 3px left border in `#A8D5D1`
+- [ ] The IBCLC badge (🛡️ IBCLC-reviewed) appears ONCE, below the last answer card — not per-card
+- [ ] Typing "latch" or "good latch" returns the latch answer (Pair 1) as a single card with NO sub_question label (single-result = original design)
 - [ ] Typing "my milk is going away" returns the soft breasts answer (Pair 17)
-- [ ] Typing "what is a doula" (no match) returns the escalation fallback
+- [ ] Typing "what is a doula" (no match) returns the escalation fallback — `matched: false` path
 - [ ] The no-match response shows 3 tappable escalation rows (no IBCLC badge)
 - [ ] The prepopulated "Yesterday" message + divider is visible on first open
 - [ ] The input field is fixed at the bottom and keyboard doesn't break the layout
 - [ ] Chat history persists when you navigate away and come back
+- [ ] (Multi-result test) Temporarily add a second result object to one Q&A pair's return value — two answer cards render in order, each with its sub_question label above the answer body
+- [ ] (Caveat test) Temporarily add caveat: "Results may vary — we recommend speaking with a lactation consultant." and confidence_tier: "MEDIUM" to one result — the caveat text appears below that card's answer, with a top divider and "⚠️ Note:" prefix
+- [ ] (Contradiction test) Temporarily set contradiction_warning to a non-null string — the amber (#FFF3CD) banner renders above the answer cards, before any result
 
 ---
 
@@ -1366,4 +1435,4 @@ When showing this to someone, walk through in this order:
 ---
 
 *This brief was generated for Ashley from the Latched MVP Experience Spec v1.0, Brand Guidelines, and Technical Design Document v1.0.*  
-*Last updated: May 25, 2026*
+*Last updated: May 26, 2026 — Prompt 4 updated to reflect semantic search API response shape (results[], sub_question, caveat, contradiction_warning)*

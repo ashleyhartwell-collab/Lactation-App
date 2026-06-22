@@ -193,7 +193,9 @@ Both tools let you filter by category, sort by review status, comment on individ
 
 **Export format for the technical matching system: JSON**
 
-When entries are ready for the matching system, export from Airtable/Sheets to a JSON array. Each entry becomes a JSON object with the same fields. The embedding model (e.g. text-embedding-3-small via OpenAI or Haiku via Anthropic) generates a vector for each `question_variants` value; those vectors go into the store. At query time, the user's question is embedded and matched against the stored vectors; the highest-confidence match returns the corresponding `answer` field verbatim.
+When entries are ready for the matching system, export from Airtable/Sheets to a JSON array. Each entry becomes a JSON object with the same fields. An embedding model (`text-embedding-3-small` via OpenAI) generates a vector for each `question_variants` value; those vectors go into the store. At query time, the user's question is embedded and cosine-matched against the stored vectors; the highest-confidence match returns the corresponding `answer` field verbatim.
+
+Claude Haiku (Anthropic) is a separate, non-embedding component. It does not generate vectors. It is the chat LLM that operates around retrieval: selecting the best answer from the small candidate set the vector search returns, and drafting answers for questions that don't match any existing entry (under a tight system prompt, refusing with `draft_status = 'cannot_generate'` for medication, diagnosis, or clinical-evaluation requests). GPT-4o-mini is the fallback if Anthropic's API is unavailable.
 
 **The schema itself (the fields) is correct** — question_variants, answer, escalation_trigger, sources, advisor_reviewed, review_due, confidence_tier. Those stay. Only the file format changes.
 

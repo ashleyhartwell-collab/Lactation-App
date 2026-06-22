@@ -1269,3 +1269,368 @@ This checklist must be completed before any user traffic is allowed into the pro
 *This document is a living artifact. Update Section 7 (Open Technical Questions) as decisions are made. Flag any section that becomes outdated as the build progresses.*
 
 *Next review: when Phase 1 development begins, or when a technical co-founder/contractor joins.*
+
+---
+
+## 8. Companion Layer — Technical Design
+
+**Last updated:** 2026-05-31  
+**Feature area:** Anticipatory Guidance (AG), Milestone Memory (ML), Daily Check-In (CI)  
+**Dependencies:** `user_profiles` (existing), `semantic-search` edge function (existing)
+
+---
+
+### 8.1 New database tables
+
+#### `companion_triggers`
+Pre-seeded lookup table. One row per defined trigger in the AG and ML libraries. Immutable at runtime — updated only via migration when the libraries are updated.
+
+```sql
+CREATE TABLE companion_triggers (
+  id            text PRIMARY KEY,                   -- e.g. "AG-001", "ML-005"
+  feature       text NOT NULL CHECK (feature IN ('AG','ML')),
+  trigger_type  text NOT NULL CHECK (trigger_type IN (
+                  'time_based','event_based','profile_based',
+                  'chat_signal','goal_comparison','manual')),
+  paths         text[],                             -- NULL = all paths; else ['A','B','C']
+  -- Time-based: offset in days from baby_dob
+  dob_offset_min int,
+  dob_offset_max int,
+  -- Profile-based: field + value conditions (JSONB)
+  profile_conditions jsonb,
+  -- Chat signal: keyword list that activates this trigger
+  chat_signal_keywords text[],
+  -- Goal comparison: goal threshold in days
+  goal_threshold_days int,
+  priority      int NOT NULL DEFAULT 50,            -- lower = higher priority
+  created_at    timestamptz DEFAULT now()
+);
+```
+
+#### `pending_companion_items`
+Queue of items ready to show to a specific user. Populated by `evaluate-companion-triggers`. Consumed by the React client on app open.
+
+```sql
+CREATE TABLE pending_companion_items (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  trigger_id    text NOT NULL REFERENCES companion_triggers(id),
+  feature       text NOT NULL CHECK (feature IN ('AG','ML')),
+  created_at    timestamptz DEFAULT now(),
+  shown_at      timestamptz,                        -- NULL = not yet shown
+  dismissed_at  timestamptz,
+  -- Prevent duplicate queueing
+  UNIQUE (user_id, trigger_id)
+);
+CREATE INDEX pending_companion_items_user_unshown
+  ON pending_companion_items (user_id)
+  WHERE shown_at IS NULL;
+```
+
+#### `companion_signals`
+Side-effect written by `semantic-search` when NLP detects a trigger keyword in a chat turn. Read by `evaluate-companion-triggers`.
+
+```sql
+CREATE TABLE companion_signals (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  signal_key    text NOT NULL,                      -- e.g. "mastitis_resolved", "first_latch"
+  source_turn_id uuid,                              -- FK to chat_messages if available
+  created_at    timestamptz DEFAULT now(),
+  processed_at  timestamptz,                        -- NULL = not yet evaluated
+  UNIQUE (user_id, signal_key)                      -- one signal per type per user
+);
+```
+
+#### `daily_checkins`
+One row per user per calendar day.
+
+```sql
+CREATE TABLE daily_checkins (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  checkin_date  date NOT NULL DEFAULT current_date,
+  mood          text NOT NULL CHECK (mood IN (
+                  'struggling','hanging_in','good_day','small_win')),
+  notes         text,                               -- optional free-text from "tell me about it"
+  created_at    timestamptz DEFAULT now(),
+  UNIQUE (user_id, checkin_date)
+);
+CREATE INDEX daily_checkins_user_date ON daily_checkins (user_id, checkin_date DESC);
+```
+
+#### `user_profiles` additions
+
+```sql
+ALTER TABLE user_profiles
+  ADD COLUMN IF NOT EXISTS feeding_goal     text,      -- "6_weeks","3_months","6_months","as_long_as_works","unsure"
+  ADD COLUMN IF NOT EXISTS feeding_goal_days int,       -- resolved numeric value for goal comparison
+  ADD COLUMN IF NOT EXISTS companion_enabled boolean NOT NULL DEFAULT true;
+```
+
+---
+
+### 8.2 Updated `upsert-profile` edge function
+
+Add `feeding_goal` and derived `feeding_goal_days` to the upsert body:
+
+```typescript
+const GOAL_DAYS: Record<string, number> = {
+  "6_weeks": 42, "3_months": 84, "6_months": 180,
+  "as_long_as_works": 9999, "unsure": 9999
+};
+
+// In upsertData:
+feeding_goal: body.feeding_goal ?? existing.feeding_goal,
+feeding_goal_days: body.feeding_goal
+  ? (GOAL_DAYS[body.feeding_goal] ?? 9999)
+  : existing.feeding_goal_days,
+```
+
+---
+
+### 8.3 New edge function: `evaluate-companion-triggers`
+
+**Purpose:** For a given user, evaluate all companion triggers and write qualified items to `pending_companion_items`.
+
+**When it runs:**
+- On a cron schedule every 6 hours (Supabase pg_cron or Supabase scheduled functions)
+- On demand via POST from the React client at each app open (debounced to once per 30 minutes per user)
+
+**Algorithm:**
+
+```typescript
+async function evaluateForUser(userId: string, supabase: SupabaseClient) {
+  // 1. Fetch profile
+  const profile = await getProfile(userId);
+  if (!profile?.baby_dob || !profile.companion_enabled) return;
+
+  const babyAgeDays = daysBetween(profile.baby_dob, new Date());
+  const feedingPath = profile.feeding_preference;         // 'A'|'B'|'C'
+  const anatomy     = profile.breast_anatomy ?? [];
+  const pumpModel   = profile.pump_models ?? [];
+  const goalDays    = profile.feeding_goal_days ?? 9999;
+
+  // 2. Load all triggers not yet queued for this user
+  const { data: triggers } = await supabase
+    .from('companion_triggers')
+    .select('*')
+    .not('id', 'in',
+      supabase.from('pending_companion_items')
+        .select('trigger_id')
+        .eq('user_id', userId)
+    );
+
+  // 3. Load companion signals for this user
+  const { data: signals } = await supabase
+    .from('companion_signals')
+    .select('signal_key')
+    .eq('user_id', userId)
+    .is('processed_at', null);
+  const signalKeys = new Set(signals?.map(s => s.signal_key) ?? []);
+
+  const toQueue: string[] = [];
+
+  for (const trigger of triggers ?? []) {
+    // Path filter
+    if (trigger.paths && !trigger.paths.includes(feedingPath)) continue;
+
+    let qualifies = false;
+
+    if (trigger.trigger_type === 'time_based') {
+      qualifies = babyAgeDays >= trigger.dob_offset_min &&
+                  babyAgeDays <= trigger.dob_offset_max;
+    }
+    else if (trigger.trigger_type === 'profile_based') {
+      qualifies = evaluateProfileCondition(trigger.profile_conditions, {
+        anatomy, pumpModel, feedingPath
+      });
+    }
+    else if (trigger.trigger_type === 'chat_signal') {
+      qualifies = (trigger.chat_signal_keywords ?? [])
+        .some(k => signalKeys.has(k));
+    }
+    else if (trigger.trigger_type === 'goal_comparison') {
+      qualifies = babyAgeDays >= (trigger.goal_threshold_days ?? goalDays);
+    }
+    // 'manual' triggers are only queued via the client explicitly — skip here
+
+    if (qualifies) toQueue.push(trigger.id);
+  }
+
+  if (toQueue.length > 0) {
+    await supabase.from('pending_companion_items').upsert(
+      toQueue.map(tid => ({ user_id: userId, trigger_id: tid,
+        feature: tid.startsWith('AG') ? 'AG' : 'ML' })),
+      { onConflict: 'user_id,trigger_id', ignoreDuplicates: true }
+    );
+    // Mark signals as processed
+    await supabase.from('companion_signals')
+      .update({ processed_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .in('signal_key', Array.from(signalKeys));
+  }
+}
+```
+
+---
+
+### 8.4 Updated `semantic-search` edge function — companion signal detection
+
+Add a `detectCompanionSignals` function that runs as a side-effect after every chat turn. Does not block the chat response.
+
+```typescript
+const SIGNAL_MAP: Record<string, string[]> = {
+  mastitis_resolved:    ['mastitis', 'breast infection', 'antibiotics finished'],
+  first_latch:          ['first latch', 'finally latched', 'latched for the first time', 'she latched'],
+  nursing_strike_over:  ['nursing again', 'back at the breast', 'strike is over', 'nursing strike'],
+  supply_concern:       ['low supply', 'not enough milk', "supply is dropping", "running out of milk"],
+  pain_mention:         ['nipple pain', 'nipples hurt', 'latch hurts', 'sore nipples', 'cracked'],
+  return_to_work:       ['back to work', 'returning to work', 'first day back', 'pumped at work'],
+  illness:              ['i was sick', 'had a cold', 'had the flu', 'got sick', 'fever'],
+  combo_decision:       ['decided to combo', 'adding formula', 'supplement with formula'],
+  freezer_stash:        ['first bag', 'put milk in the freezer', 'freezer stash'],
+  outside_home:         ['fed in public', 'nursed at', 'pumped in the car', 'restaurant', 'at a coffee shop'],
+};
+
+async function detectCompanionSignals(
+  userId: string, questionText: string, supabase: SupabaseClient
+) {
+  const lower = questionText.toLowerCase();
+  const detected: string[] = [];
+  for (const [signal, keywords] of Object.entries(SIGNAL_MAP)) {
+    if (keywords.some(k => lower.includes(k))) detected.push(signal);
+  }
+  if (detected.length === 0) return;
+
+  await supabase.from('companion_signals').upsert(
+    detected.map(signal => ({ user_id: userId, signal_key: signal })),
+    { onConflict: 'user_id,signal_key', ignoreDuplicates: true }
+  );
+}
+```
+
+---
+
+### 8.5 New edge function: `get-companion-item`
+
+**Purpose:** Called by the React client on app open. Returns the single highest-priority unshown companion item for the user, along with the full message content (pulled from the AG or ML content store).
+
+```typescript
+// POST /functions/v1/get-companion-item
+// Auth: required (JWT)
+// Body: { user_id: string }
+// Returns: { item: CompanionItem | null }
+
+type CompanionItem = {
+  id: string;                        // pending_companion_items.id
+  trigger_id: string;                // e.g. "ML-005"
+  feature: 'AG' | 'ML';
+  headline: string;
+  body: string;
+  learn_more?: string;
+  escalation?: string;
+  share_card?: string;
+  sources?: string;
+};
+```
+
+The message content is served from a seeded `companion_content` table (or a static JSON file bundled with the function — simpler at v1 scale) keyed by `trigger_id`.
+
+---
+
+### 8.6 New edge function: `dismiss-companion-item`
+
+**Purpose:** Marks a companion item as shown/dismissed. Called when the user taps dismiss or reads the full message.
+
+```typescript
+// POST /functions/v1/dismiss-companion-item
+// Body: { item_id: string, action: 'shown' | 'dismissed' | 'expanded' }
+// Writes shown_at or dismissed_at to pending_companion_items
+```
+
+---
+
+### 8.7 New edge function: `log-checkin`
+
+**Purpose:** Logs the daily check-in response. Returns the appropriate follow-up message.
+
+```typescript
+// POST /functions/v1/log-checkin
+// Auth: required (JWT)
+// Body: { mood: 'struggling'|'hanging_in'|'good_day'|'small_win', notes?: string }
+// Returns: { follow_up_message: string, pending_ag_item?: CompanionItem }
+```
+
+Logic:
+1. Write to `daily_checkins` (upsert on `user_id + checkin_date`; reject if already submitted today)
+2. Look up the static follow-up message for the mood
+3. If mood = 'struggling': fetch pending AG item if any, attach to response
+4. Return follow-up message + optional AG item
+
+---
+
+### 8.8 Seeding the trigger and content tables
+
+The full AG and ML libraries are seeded via a migration file. Seed data is derived directly from `anticipatory-guidance-library.docx` and `milestone-memory-library.docx`.
+
+Recommended approach: generate `supabase/seed/companion_triggers.sql` and `supabase/seed/companion_content.sql` from the content JS files already in the ag-build and ml-build directories, programmatically. This makes the source of truth the JS content files, not the Word docs.
+
+```bash
+# Generate SQL seed from content.js files
+node scripts/generate-companion-seed.js \
+  outputs/ag-build/content.js \
+  outputs/ml-build/content.js \
+  > supabase/seed/companion_seed.sql
+```
+
+---
+
+### 8.9 RLS policies
+
+```sql
+-- pending_companion_items: users can only read/update their own items
+ALTER TABLE pending_companion_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "users_own_companion_items" ON pending_companion_items
+  FOR ALL USING (auth.uid() = user_id);
+
+-- daily_checkins: users can only read/write their own checkins
+ALTER TABLE daily_checkins ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "users_own_checkins" ON daily_checkins
+  FOR ALL USING (auth.uid() = user_id);
+
+-- companion_triggers: public read (no sensitive data)
+ALTER TABLE companion_triggers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "companion_triggers_public_read" ON companion_triggers
+  FOR SELECT USING (true);
+
+-- companion_signals: users can only read their own
+ALTER TABLE companion_signals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "users_own_companion_signals" ON companion_signals
+  FOR ALL USING (auth.uid() = user_id);
+```
+
+---
+
+### 8.10 Performance notes
+
+- `pending_companion_items` index on `(user_id) WHERE shown_at IS NULL` ensures app-open queries are fast at scale
+- `companion_triggers` table is small (~27 + 25 rows) and can be cached in the edge function in-memory for the cron job
+- The `evaluate-companion-triggers` cron runs every 6 hours but the on-demand path (app open) is debounced — no risk of hammering the evaluator
+- Chat signal detection in `semantic-search` is synchronous but cheap — simple string matching, no AI calls
+
+---
+
+### 8.11 Pre-launch checklist additions
+
+- [ ] `companion_triggers` seeded with all 25 AG + 27 ML entries
+- [ ] `companion_content` seeded with full message content for all 52 entries
+- [ ] AG-016 and AG-023 flagged as `held = true` in `companion_triggers` — do not queue until HOLD resolved
+- [ ] `evaluate-companion-triggers` cron job configured and tested end-to-end
+- [ ] `get-companion-item` returns null when no items are pending (graceful)
+- [ ] Path-variant content present for ML-003, ML-008, ML-012, ML-019
+- [ ] `feeding_goal` required field wired in onboarding and stored in `user_profiles`
+- [ ] Daily check-in deduplication (one per day per user) tested
+- [ ] Chat signal detection tested for all entries in `SIGNAL_MAP`
+- [ ] RLS policies tested with non-admin test user
+

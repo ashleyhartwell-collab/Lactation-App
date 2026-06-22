@@ -1,4 +1,4 @@
-# Lactation Journey — New Mom Research Survey
+# Latched — New Mom Research Survey
 
 **Target respondent:** Moms whose baby is currently around 3 months old (range: 2–5 months). Open to all feeding outcomes — exclusive breastfeeding, combo, formula, or stopped early. The moms who *didn't* hit their goals are the most valuable respondents.
 

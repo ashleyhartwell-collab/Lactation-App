@@ -1,4 +1,4 @@
-# Design References — Lactation Journey App
+# Design References — Latched
 
 ## Design system to use
 

@@ -1,11 +1,11 @@
-# Lactation Journey App — Brand Guidelines
+# Latched — Brand Guidelines
 *Foundation Draft · Last updated: May 25, 2026*
 
 ---
 
 ## 0. About This Document
 
-This is the living foundation for the Lactation Journey brand. Sections marked **🔲 Needs Detail** are placeholders to be fleshed out as the brand matures. Sections marked **✅ Established** are ready to guide decisions today.
+This is the living foundation for the Latched brand. Sections marked **🔲 Needs Detail** are placeholders to be fleshed out as the brand matures. Sections marked **✅ Established** are ready to guide decisions today.
 
 ---
 
