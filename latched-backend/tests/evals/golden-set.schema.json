@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://latched.app/eval/golden-set.schema.json",
+  "title": "Latched Quick Chat — Semantic Search Golden Record",
+  "description": "One record per labeled test question. The eval runner posts `question` to the semantic-search Edge Function and compares the response to `expected_matches` (plus optional decomposition / tier / no-match assertions).",
+  "type": "object",
+  "required": ["id", "question", "test_type", "expected_matches"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^GS-\\d{3,}$",
+      "description": "Stable test ID. Never reused — append-only so failures stay diffable across runs."
+    },
+    "question": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Raw user question as it would arrive from the client. Verbatim — keep typos, casing, punctuation as a real user would type."
+    },
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "paraphrase",
+        "synonym",
+        "compound",
+        "edge_case",
+        "off_topic",
+        "bras_downgrade",
+        "low_confidence",
+        "anatomy_context"
+      ],
+      "description": "Slice tag — used to compute per-slice metrics (paraphrase accuracy, off-topic rejection rate, bras downgrade compliance, etc.)."
+    },
+    "category": {
+      "type": ["string", "null"],
+      "description": "FAQ category this question targets (matches `faq_entries.category`). Null for compound / off_topic. Used for category-level slicing."
+    },
+    "expected_matches": {
+      "type": "array",
+      "description": "Ordered list of FAQ matches the response should contain. Empty array means the response should be `{ matched: false }` (off-topic, bras_downgrade, low_confidence).",
+      "items": {
+        "type": "object",
+        "required": ["faq_id", "tier"],
+        "additionalProperties": false,
+        "properties": {
+          "faq_id": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}-\\d{3}$",
+            "description": "external_id from smart-faq.csv (e.g. LAT-001)."
+          },
+          "tier": {
+            "type": "string",
+            "enum": ["HIGH", "MEDIUM"],
+            "description": "Expected confidence_tier. LOW is never expected in a returned match — LOW results are filtered out before response."
+          },
+          "expect_escalation": {
+            "type": "boolean",
+            "description": "If true, the response item must include escalation_text."
+          }
+        }
+      }
+    },
+    "expected_sub_questions": {
+      "type": "array",
+      "description": "For compound questions: the sub-questions the decomposer should produce (semantic match, not exact string). Length should equal expected_matches length.",
+      "items": { "type": "string" }
+    },
+    "anatomy_context": {
+      "type": "object",
+      "description": "Optional user_profile context to inject before calling the function. Used to test that anatomy/pump context shapes decomposition correctly.",
+      "additionalProperties": false,
+      "properties": {
+        "breast_anatomy": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["condition", "laterality"],
+            "properties": {
+              "condition": { "type": "string" },
+              "laterality": { "type": "string", "enum": ["left", "right", "both"] }
+            }
+          }
+        },
+        "pump_model": { "type": ["string", "null"] }
+      }
+    },
+    "expected_contradiction": {
+      "type": ["boolean", "null"],
+      "description": "For compound questions only. true = response should include a contradiction_warning. false = warning should be null. null = don't assert."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Why this case exists — failure mode it guards against, ticket link, IBCLC review note."
+    }
+  }
+}
