@@ -34,8 +34,9 @@ export default async function globalSetup() {
     const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,   // skip email confirmation
-    })
+      email_confirm: true,         // mark confirmed without sending email
+      suppress_confirmation_email: true,  // do not send welcome / confirmation email
+    } as any)
     if (error || !data.user) {
       throw new Error(`[setup] Failed to create user ${email}: ${error?.message}`)
     }

@@ -11,6 +11,7 @@
     "generate-variants:dry": "node scripts/generate-variants.js --dry-run",
     "test": "node --test tests/semantic-search.test.js",
     "test:auth": "node --test tests/auth.test.js",
+    "eval": "node scripts/run-eval.js",
     "db:reset": "supabase db reset",
     "functions:serve": "supabase functions serve semantic-search --env-file .env",
     "functions:deploy": "supabase functions deploy semantic-search"

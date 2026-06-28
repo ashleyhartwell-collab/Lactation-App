@@ -2,7 +2,7 @@
   "name": "latched-e2e",
   "version": "1.0.0",
   "private": true,
-  "description": "Playwright end-to-end tests for the Lactation Journey App",
+  "description": "Playwright end-to-end tests for Latched",
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
