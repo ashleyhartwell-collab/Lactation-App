@@ -18,3 +18,7 @@ e2e/dist/
 
 # Supabase CLI temp files
 supabase/.temp/
+
+# Personal / local artifacts (not part of the codebase)
+Ashley_Hartwell_Resume_*
+docs/conversation-summary-*.md
