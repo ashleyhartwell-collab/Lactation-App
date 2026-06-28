@@ -7,6 +7,8 @@
   "scripts": {
     "embed": "node scripts/embed-faq.js",
     "embed:dry": "node scripts/embed-faq.js --dry-run",
+    "embed:protocols": "node scripts/embed-protocols.js",
+    "embed:protocols:dry": "node scripts/embed-protocols.js --dry-run",
     "generate-variants": "node scripts/generate-variants.js",
     "generate-variants:dry": "node scripts/generate-variants.js --dry-run",
     "test": "node --test tests/semantic-search.test.js",
