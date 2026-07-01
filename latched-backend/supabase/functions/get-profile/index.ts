@@ -2,7 +2,7 @@
 //
 // GET (no body)
 //   Authorization: Bearer <supabase_jwt>
-//   -> { profile: { id, display_name, baby_dob, feeding_preference, pump_models, weeks_postpartum, onboarding_complete } }
+//   -> { profile: { id, display_name, baby_display_name, baby_dob, feeding_preference, pump_models, weeks_postpartum, onboarding_complete } }
 //      or { profile: null }  if profile row doesn't exist yet
 //
 // Returns 401 if the JWT is missing or invalid.
@@ -49,7 +49,7 @@ serve(async (req: Request) => {
 
   const { data: profile, error } = await serviceClient
     .from('user_profiles')
-    .select('id, display_name, baby_dob, feeding_preference, pump_models, onboarding_complete')
+    .select('id, display_name, baby_display_name, baby_dob, feeding_preference, pump_models, onboarding_complete')
     .eq('id', user.id)
     .maybeSingle();
 

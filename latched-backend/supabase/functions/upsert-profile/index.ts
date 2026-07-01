@@ -1,10 +1,13 @@
 // Latched — upsert-profile Edge Function
 //
-// POST { display_name?, baby_dob, feeding_preference?, feeding_goal?, breast_anatomy?, pump_models? }
+// POST { display_name?, baby_display_name?, baby_dob, feeding_preference?, feeding_goal?, breast_anatomy?, pump_models? }
 //   Authorization: Bearer <supabase_jwt>
-//   -> { profile: { id, display_name, baby_dob, feeding_preference, feeding_goal,
+//   -> { profile: { id, display_name, baby_display_name, baby_dob, feeding_preference, feeding_goal,
 //                   feeding_goal_days, breast_anatomy, pump_models,
 //                   weeks_postpartum, onboarding_complete } }
+//
+// display_name = user/parent name. baby_display_name = baby's name (optional, may be NULL
+// until the user sets it; does not gate onboarding_complete). See migration 00022.
 //
 // feeding_goal: optional enum — 6_weeks | 3_months | 6_months | as_long_as_works | unsure
 //   Stored alongside feeding_goal_days (numeric day count) so the companion trigger
@@ -140,6 +143,7 @@ interface AnatomyItem {
 
 interface UpsertBody {
   display_name?: string;
+  baby_display_name?: string;
   baby_dob?: string;
   feeding_preference?: string;
   feeding_goal?: string;
@@ -212,7 +216,7 @@ serve(async (req: Request) => {
     return json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const { display_name, baby_dob, feeding_preference, feeding_goal, breast_anatomy, pump_models } = body;
+  const { display_name, baby_display_name, baby_dob, feeding_preference, feeding_goal, breast_anatomy, pump_models } = body;
 
   if (!baby_dob) return json({ error: 'baby_dob is required' }, 400);
 
@@ -249,6 +253,7 @@ serve(async (req: Request) => {
     onboarding_complete,
   };
   if (display_name !== undefined) upsertData.display_name = display_name;
+  if (baby_display_name !== undefined) upsertData.baby_display_name = baby_display_name;
   if (feeding_preference !== undefined) {
     if (!VALID_FEEDING_PREFERENCES.has(feeding_preference)) {
       return json(
@@ -274,7 +279,7 @@ serve(async (req: Request) => {
   const { data: profile, error: upsertError } = await serviceClient
     .from('user_profiles')
     .upsert(upsertData, { onConflict: 'id' })
-    .select('id, display_name, baby_dob, feeding_preference, feeding_goal, feeding_goal_days, breast_anatomy, pump_models, onboarding_complete')
+    .select('id, display_name, baby_display_name, baby_dob, feeding_preference, feeding_goal, feeding_goal_days, breast_anatomy, pump_models, onboarding_complete')
     .single();
 
   if (upsertError) {
