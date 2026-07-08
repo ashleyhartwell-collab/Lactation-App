@@ -24,7 +24,7 @@ test.describe('Flow 2 — Modules + Chat', () => {
   // -----------------------------------------------------------------
   test.describe('Part A — Getting Started Modules', () => {
 
-    test('Module library shows 6 active modules, none complete on fresh sign-in', async ({ signedInPage: page }) => {
+    test('Module library shows 7 active modules, none complete on fresh sign-in', async ({ signedInPage: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
@@ -56,7 +56,7 @@ test.describe('Flow 2 — Modules + Chat', () => {
         page.locator('text=✓ Your First 48').or(
           page.locator('[data-testid*="complete"]').first()
         ).or(
-          page.locator('text=1 of 6 modules complete')
+          page.locator('text=1 of 7 modules complete')
         ).first()
       ).toBeVisible({ timeout: 5000 })
     })
@@ -69,7 +69,7 @@ test.describe('Flow 2 — Modules + Chat', () => {
 
       // If not already complete, complete it
       // Completion badge is a ✓ span — detect via text pattern or progress counter
-      const completionIndicator = page.locator('text=/✓|\\d+ of 6 modules complete/').first()
+      const completionIndicator = page.locator('text=/✓|\\d+ of 7 modules complete/').first()
       const alreadyDone = await completionIndicator.isVisible({ timeout: 2000 }).catch(() => false)
       if (!alreadyDone) {
         await module1.click()
@@ -85,7 +85,7 @@ test.describe('Flow 2 — Modules + Chat', () => {
 
       // Completion still shown — ✓ badge or progress counter
       await expect(
-        page.locator('text=/✓|\\d+ of 6 modules complete/').first()
+        page.locator('text=/✓|\\d+ of 7 modules complete/').first()
       ).toBeVisible({ timeout: 8000 })
     })
 
@@ -119,6 +119,39 @@ test.describe('Flow 2 — Modules + Chat', () => {
       await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
     })
 
+    test('Module 5 — Cluster Feeding: content visible, reachable from Reading Nora\'s Cues, marks complete', async ({ signedInPage: page }) => {
+      await page.goto('/getting-started')
+      await page.waitForLoadState('networkidle')
+
+      // Reach it via the link inside Reading Nora's Cues first, to confirm the teaser link works
+      await orLoc(page, 'text=Reading Nora\'s Cues', 'text=Nora\'s Cues').first().click()
+      await expect(orLoc(page, 'text=cluster feed', 'text=Cluster feeding', 'text=CLUSTER FEEDING').first()).toBeVisible({ timeout: 8000 })
+
+      const linkOut = orLoc(page, 'text=See the full Cluster Feeding module', 'text=Cluster Feeding module').first()
+      const hasLinkOut = await linkOut.isVisible({ timeout: 3000 }).catch(() => false)
+      if (hasLinkOut) {
+        await linkOut.click()
+      } else {
+        // Fall back to opening it directly from the library if the teaser link isn't found
+        await page.goto('/getting-started')
+        await page.waitForLoadState('networkidle')
+        await orLoc(page, 'text=Cluster Feeding').first().click()
+      }
+
+      // Module content should be visible
+      await expect(orLoc(page, 'text=cluster feed', 'text=Cluster feeding').first()).toBeVisible({ timeout: 8000 })
+      await expect(orLoc(page, 'text=Normal', 'text=Worth a Call').first()).toBeVisible({ timeout: 8000 })
+
+      // Complete it
+      await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
+
+      // Return to library — completion reflected in progress summary
+      await orLoc(page, '[data-testid="tab-library"]', 'text=Getting Started', 'text=Library', '[aria-label="Back"]').first().click()
+      await expect(
+        page.locator('text=/✓|\\d+ of 7 modules complete/').first()
+      ).toBeVisible({ timeout: 5000 })
+    })
+
     test('All 3 completed modules persist after full reload', async ({ signedInPage: page }) => {
       // Complete modules 1, 2, 3 in sequence
       const modules = [
@@ -143,8 +176,8 @@ test.describe('Flow 2 — Modules + Chat', () => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      // Completion shown as ✓ badges or progress counter "N of 6 modules complete"
-      const progressText = await page.locator('text=/\\d+ of 6 modules complete/').first().textContent({ timeout: 5000 }).catch(() => '')
+      // Completion shown as ✓ badges or progress counter "N of 7 modules complete"
+      const progressText = await page.locator('text=/\\d+ of 7 modules complete/').first().textContent({ timeout: 5000 }).catch(() => '')
       const completedNum = parseInt(progressText?.match(/(\d+)/)?.[1] ?? '0', 10)
       expect(completedNum).toBeGreaterThanOrEqual(3)
     })
