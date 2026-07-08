@@ -1,7 +1,7 @@
 # Latched — Path Transition System: Design Proposal
 
-**Status:** DRAFT — For Ashley's review and approval before any changes to protocol-outline-v1.md  
-**Prepared:** 2026-06-28  
+**Status:** Content complete, all Phase 0 decisions locked (2026-07-08) — still DRAFT for engineering/frontend purposes. No changes to protocol-outline-v1.md have been made yet.  
+**Prepared:** 2026-06-28. Updated 2026-07-08 (remaining 8 modules drafted, open questions resolved).  
 **Scope:** Full design spec for graceful path transitions across all feeding routes  
 **Does NOT modify:** protocol-outline-v1.md (changes proposed in Section 4 only)
 
@@ -316,7 +316,7 @@ The chat layer should surface the hub, not attempt to walk through the entire tr
 
 ## Section 3: Full Transition Modules
 
-The three highest-signal transitions drafted in full. Voice and format match the established protocol standard.
+All 11 transitions, drafted in full (2026-07-08: the remaining 8 added — T-C-F, T-B-A, T-A-C, T-B-C, T-C-A, T-C-B, T-WEAN, T-REL — following the recommended authoring order in Section 4: formula exits, then nursing/pumping, then combo, T-WEAN, T-REL last). Voice and format match the established protocol standard, and the newer 8 also apply the voice rules locked during the Getting Started rework: no em dashes, direct second-person address, a mix of short and compound sentences rather than a uniform cadence. T-REL is intentionally thin per Ashley's Phase 0 decision (2026-07-08) — it routes to an IBCLC rather than coaching the process in-app.
 
 ---
 
@@ -678,6 +678,433 @@ Hold your baby semi-upright. Keep the bottle more horizontal than vertical. Let 
 
 ---
 
+### T-C-F — Combination Feeding to Formula
+
+**FINISHING THE MILK CHAPTER.**
+Path Change • Combination Feeding → Formula • Estimated read time: 3–4 min
+
+---
+
+**LEAD LINE**
+
+You've already been giving your baby both. Closing out the milk part of that mix doesn't erase the part you're keeping.
+
+---
+
+**WHAT TO KNOW**
+
+Whatever milk component you still have, whether that's nursing sessions, pump sessions, or some of both, this module is about winding it down comfortably. Formula is already a normal part of your baby's diet. What's changing is the ratio, not the whole system.
+
+**Weaning still works best gradually.** Even though formula has already been doing part of the job, your body still needs time to catch up when milk sessions stop. Drop one session every two to three days, whether that's a nursing session, a pump session, or a mix of both if you're doing both right now. If you're doing both, start with whichever one is giving your body less stimulation. That's usually the pump if pumping was occasional, or a specific nursing session your baby doesn't seem attached to.
+
+**Your body doesn't know the difference between "done because it's time" and "done because of something else."** It just responds to the drop in demand. Expect fullness and pressure for a few days after each session you drop. That's your supply catching up to the new normal, not a sign something's wrong.
+
+**How long it takes.** Most moms are through the active winding-down process in one to three weeks. You may notice occasional leaking or fullness for a while after that, even once you feel mostly done. That's normal too.
+
+**Formula, for the parts that already exist.** You already know formula. This isn't a new skill you're learning, it's the same one you've been using, just doing more of the work now. If you want the full prep and storage rundown, it's in Path C's regular content.
+
+---
+
+**WHAT TO DO**
+
+1. **Drop one session every two to three days.** Start with whichever session (nursing or pumping) is providing the least stimulation right now.
+2. **Relieve fullness without emptying.** Hand express or pump briefly, just enough to take the edge off. Full emptying tells your body to keep producing; a little relief doesn't.
+3. **Cold compresses after relief expression** help with the pressure and inflammation.
+4. **Keep a supportive, non-binding bra on.** Skip the underwire during this stretch. Very tight binding raises your mastitis risk, so don't overcorrect in that direction either.
+5. **Increase formula gradually as milk sessions decrease,** at whatever pace your pediatrician has you on. You already know the volumes; this is just more of what you've been doing.
+
+---
+
+**WHAT TO WATCH FOR**
+
+Same mastitis risk window as any other weaning: fever above 101°F, flu-like symptoms with breast pain, or a warm, hard, red patch that doesn't ease up. If you notice fever plus breast pain plus flu symptoms, call your OB or provider that day. Don't wait it out.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+You've got this part already. If it's been a while since you looked at formula amounts or prep, the full breakdown lives in your Path C content: prep steps, storage windows, and a volume-by-age reference table. Nothing new here, just picking up where you left off.
+
+---
+
+### T-B-A — Exclusive Pumping to Nursing
+
+**TRYING THE BREAST AGAIN. WHAT TO EXPECT.**
+Path Change • Exclusive Pumping → Nursing • Estimated read time: 3–4 min
+
+---
+
+**LEAD LINE**
+
+Your supply is already built. What you're changing now is how it gets delivered, not whether it exists.
+
+---
+
+**WHAT TO KNOW**
+
+Your breast doesn't know the difference between a baby and a pump. It only knows demand: how often it's stimulated, how completely it's emptied. If you built a full supply pumping, that supply is real and it transfers. You are not starting from zero.
+
+**What's actually new here is the skill, not the supply.** Nursing is a learned coordination between you and your baby, even for babies who've nursed before and even more so if this is new or being tried again after time on the bottle. Expect a learning curve. Latch might feel awkward the first several tries. Your baby might seem confused by the different flow and effort compared to a bottle. None of that means it's not working; it usually just means it's new.
+
+**Nipple preference is a real risk during this transition, and paced bottle feeding helps.** A baby who's used to a fast, low-effort bottle flow can be reluctant to work harder at the breast, at least at first. If you're still using bottles for supplemented feeds during this transition, paced bottle feeding (baby semi-upright, bottle mostly horizontal, pauses built in) keeps the effort more similar to nursing and makes the switch back and forth easier on your baby.
+
+**Signs it's working:** latch that improves session over session rather than getting harder, a baby who seems satisfied and settled after nursing, and weight that keeps tracking the way your pediatrician expects. These are the signals that matter more than how the first few sessions feel.
+
+**An IBCLC is worth it here, especially if you haven't had hands-on support yet.** Reintroducing the breast after time away from it, or for the first time if baby was in the NICU, is exactly the kind of transition a lactation consultant is built for. This isn't a sign anything's wrong; it's just the right kind of support for this specific move.
+
+**Don't get rid of your pump yet.** You'll likely use it during the transition to protect your supply while nursing is still establishing, and it's a good backup if anything doesn't go as smoothly as planned.
+
+---
+
+**WHAT TO DO**
+
+1. **Start with skin-to-skin, no pressure to latch yet.** Let your baby get comfortable at the breast before expecting a full feed there. A few minutes of contact before or between bottle feeds builds familiarity.
+2. **Offer the breast first, when your baby is calm and mildly hungry, not frantic.** A baby who's overly hungry will have less patience for a new skill.
+3. **Keep pumping in between, at roughly your usual frequency, until nursing is reliably transferring milk.** Reduce pump sessions gradually as nursing takes over more of the job, not all at once.
+4. **Track wet and dirty diapers closely during the transition.** This is your clearest signal that milk transfer at the breast is actually happening, especially before you fully trust it.
+5. **Get an IBCLC consult if you can,** particularly if this is baby's first real attempt at the breast or if it's been more than a few weeks since the last try.
+
+---
+
+**WHAT TO WATCH FOR**
+
+Watch diaper output and weight the way you would in the newborn weeks. If output drops or your pediatrician flags weight, that's a sign nursing isn't yet transferring enough milk and you should keep pumping to make up the difference while you keep working on latch. This is common in the first one to two weeks and usually resolves as the skill develops. If it doesn't improve after a couple of weeks of consistent effort, an IBCLC visit is the next right step, not a signal to give up.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+**Getting your baby back to the breast:**
+- Try skin-to-skin time daily, even without a feeding goal attached to it
+- Offer the breast when baby is calm, not starving
+- If latch feels off, breast compression during the feed can help keep milk flowing and hold baby's interest
+- A nipple shield is sometimes a useful bridge tool for a baby used to a bottle; an IBCLC can tell you if it's right for your situation
+- Give it more than one or two tries before deciding it's not working. Most babies need repetition to relearn or learn this skill
+
+---
+
+### T-A-C — Nursing to Combination Feeding
+
+**ADDING SUPPLEMENTATION. WHAT TO KNOW.**
+Path Change • Nursing → Combination Feeding • Estimated read time: 3–4 min
+
+---
+
+**LEAD LINE**
+
+Adding formula or pumped milk to what you're already doing isn't a downgrade. It's a different, fully valid way to feed your baby, and plenty of families land here on purpose.
+
+---
+
+**WHAT TO KNOW**
+
+If a pediatrician flagged weight gain or jaundice, if your supply isn't quite covering what your baby needs even with frequent nursing, or if you just want more flexibility, combination feeding is a complete path, not something you fall into as a consolation. Some of the pressure to feel bad about this comes from outside you: a comment from a relative, a chart at the pediatrician's office, an old idea that supplementing means something went wrong. It didn't. Plenty of babies thrive on a mix, and plenty of moms find real relief in it.
+
+**The single most important technical thing here is paced bottle feeding.** However you're supplementing (formula or pumped milk), the way the bottle is offered matters more than what's in it. A baby who gets bottles too fast, too easily, can start preferring the bottle to the breast, and that preference is the actual risk in this transition, not the supplementation itself. Paced feeding (baby semi-upright, bottle mostly horizontal, built-in pauses) keeps the effort level closer to nursing and protects the nursing relationship you already have.
+
+**How supplementing affects your supply is simple mechanics, not a verdict.** Milk supply responds to demand. If a bottle replaces a nursing session, your body gets a little less demand at that time slot, and supply calibrates accordingly over time. That's neither good nor bad on its own; it's just how it works. What matters is whether it matches what you want.
+
+**If you want to protect your nursing supply while adding supplementation,** pump during or right after the sessions you're replacing with a bottle. That keeps the demand signal going even though your baby isn't the one providing it in that moment.
+
+**If you're fine letting supply settle wherever it settles,** you don't have to do anything extra. Supplement as needed and let your body adjust naturally. Either approach is legitimate; this is your call, not a right-or-wrong situation.
+
+**If formula is new to you,** the basics are simple and there's a full breakdown in Path C's content: which type, how to prepare it safely, and how much to expect your baby to take at different ages.
+
+---
+
+**WHAT TO DO**
+
+1. **Practice paced bottle feeding from the very first supplemental feed,** whoever is giving the bottle. This one habit does more to protect the nursing relationship than anything else here.
+2. **Decide whether you want to protect your current supply or let it settle naturally,** and pump accordingly if you're protecting it.
+3. **Keep nursing at the sessions you're not replacing,** at your baby's usual pace and frequency.
+4. **Loop in your pediatrician on the plan** if supplementation started because of a medical concern like weight or jaundice, so you're both tracking the same target.
+5. **Give yourself permission to adjust the plan** as you go. Combination feeding isn't a fixed ratio; it's whatever mix works for your baby and your life right now.
+
+---
+
+**WHAT TO WATCH FOR**
+
+Watch for a bottle preference developing: if your baby starts fighting the breast, seeming frustrated with the slower flow, or refusing to latch after a stretch of bottle feeds, that's the signal to double down on paced feeding and possibly reduce bottle frequency for a bit. It's very fixable, especially caught early. There's no medical red flag specific to this transition beyond the general newborn feeding concerns you'd already be watching for either way (weight, wet diapers, energy).
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+**Paced bottle feeding, the short version:**
+- Hold your baby semi-upright, not flat on their back
+- Keep the bottle horizontal enough that your baby has to work a little for the milk, not vertical where gravity does all the work
+- Pause every 20 to 30 sucks, giving your baby a break to notice they're getting full
+- A full feed should take roughly 15 to 20 minutes, not 3
+
+Formula basics, if you need them, plus a volume-by-age reference table, are in your Path C content.
+
+---
+
+### T-B-C — Exclusive Pumping to Combination Feeding
+
+**ADDING FORMULA TO YOUR EP ROUTINE.**
+Path Change • Exclusive Pumping → Combination Feeding • Estimated read time: 3 min
+
+---
+
+**LEAD LINE**
+
+Adding formula into your pumping routine doesn't erase the work you've already put in. It's a management decision, not a step back.
+
+---
+
+**WHAT TO KNOW**
+
+If your supply isn't quite meeting your baby's needs, if you want to reduce how many sessions you're doing, or if you're starting to plan a longer-term move away from full-time pumping, adding formula is a deliberate choice you get to make on your own terms. EP moms track everything (every ounce, every session) and that visibility can make adding formula feel like admitting something. It's not. It's the same kind of intentional management you've been doing all along, just with a new tool.
+
+**The bottle-feeding part of this is already familiar to you.** You've been doing paced bottle feeding this whole time, so there's no new skill to learn on that front. What's new is deciding how much formula to add and when.
+
+**How much to add depends on your goal, and your pediatrician sets the actual target.** As a general guide, formula typically replaces whatever gap exists between what you're pumping and what your baby needs, but the exact number should come from your pediatrician based on your baby's growth. This module gives you the mechanics, not the prescription.
+
+**Your pump schedule adjusts based on what you want your supply to do.** If you want to keep your current supply level and add formula on top (say, because you're increasing volume needs as baby grows), keep pumping at your usual frequency. If you're comfortable letting your supply gradually decrease as formula takes on more of the job, you can intentionally drop a session or two. Either direction is valid; this is about matching the schedule to what you actually want, not a fixed rule.
+
+**If formula is new to you,** the type, prep, and storage basics are covered in your Path C content.
+
+---
+
+**WHAT TO DO**
+
+1. **Talk to your pediatrician about the target volume** if this started because of a supply or growth concern, so you have a number to work toward rather than guessing.
+2. **Decide whether you're maintaining or reducing your pumped supply,** and adjust your pump schedule accordingly.
+3. **Introduce formula at whichever feeds make sense for your schedule,** there's no required order.
+4. **Keep your flange fit and pump routine consistent** for whatever sessions you're keeping, so output stays reliable at the level you're aiming for.
+5. **Revisit the plan as often as you need to.** This isn't a one-time decision; you can shift the ratio again later if your needs change.
+
+---
+
+**WHAT TO WATCH FOR**
+
+If you're trying to maintain your current pumped supply and it starts dropping unexpectedly, check flange fit and session frequency first; those are the two most common culprits. If you're intentionally letting supply decrease, some dip is expected and not a problem. Watch for the general mastitis signs if you do drop sessions quickly: fever, flu-like symptoms with breast pain, or a hard red area that doesn't ease. Call your OB the same day if that combination shows up.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+Formula type, safe prep, and a volume-by-age reference table are all in your Path C content, ready whenever you need them. Nothing here that requires starting from scratch.
+
+---
+
+### T-C-A — Combination Feeding to Exclusive Nursing
+
+**MOVING TOWARD NURSING ONLY.**
+Path Change • Combination Feeding → Exclusive Nursing • Estimated read time: 3 min
+
+---
+
+**LEAD LINE**
+
+If your supply has caught up and your baby's doing well at the breast, moving away from formula is a real option now, and it's one you can take at your own pace.
+
+---
+
+**WHAT TO KNOW**
+
+Maybe your supply has grown since you started combo feeding. Maybe the latch issues that led you here are resolved. Maybe you're just tired of managing two systems and formula costs are adding up. Whatever got you here, moving toward nursing only is worth doing carefully so your supply has time to actually meet the fuller demand.
+
+**Increase nursing before you cut formula, not at the same time.** The instinct is often to drop formula first and see what happens, but your supply needs a runway. Add nursing sessions (or nurse longer at existing sessions) for several days before you start reducing formula feeds. This gives your body the signal it needs before you take away the backup.
+
+**Your supply won't respond instantly. Give it 48 to 72 hours** after any increase in nursing frequency before expecting to see a real difference in output. That's a normal, physiological lag, not a sign it's not working.
+
+**Watch diaper output and weight as your real signal,** more than how full or empty your breasts feel in the moment. If wet diapers stay steady or increase and your pediatrician's weight checks stay on track as you reduce formula, nursing is doing its job.
+
+**If you've been formula-heavy (more than about half of feeds),** this is a bigger ask of your supply, and it's worth a check-in with an IBCLC before you get too far into reducing formula. Not because something's wrong, but because a bigger supply increase benefits from a second set of eyes on positioning and frequency.
+
+**Paced bottle feeding still matters during this stretch,** for whatever bottle feeds remain. As bottle feeds decrease naturally, this becomes less relevant, but don't drop the habit early just because you're on your way out.
+
+---
+
+**WHAT TO DO**
+
+1. **Add nursing sessions or extend existing ones for a few days before reducing any formula.** Let supply respond first.
+2. **Reduce formula gradually, one feed at a time,** rather than cutting it all at once.
+3. **Track wet diapers and any scheduled weight checks** as your main signal that nursing is covering the gap.
+4. **Book an IBCLC visit if you were doing significant supplementation,** just to have support through a bigger supply ask.
+5. **Keep paced bottle feeding going** for any formula feeds still in the mix during the transition.
+
+---
+
+**WHAT TO WATCH FOR**
+
+If diaper output drops or your pediatrician flags weight as you reduce formula, that's the signal to slow down, not push through. Add back a formula feed if needed and give your supply more time before trying again. This isn't a failure; recalibrating the pace is a completely normal part of this transition.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+**Signs supply is meeting the increased demand:**
+- Steady or increasing wet diaper counts
+- Weight tracking on your pediatrician's expected curve
+- Your baby seeming satisfied and settled after nursing sessions, without immediately rooting again
+
+If any of these aren't lining up after a week or so of consistent effort, an IBCLC visit is the right next step.
+
+---
+
+### T-C-B — Combination Feeding to Exclusive Pumping
+
+**MOVING TOWARD PUMPING ONLY.**
+Path Change • Combination Feeding → Exclusive Pumping • Estimated read time: 3–4 min
+
+---
+
+**LEAD LINE**
+
+Choosing the pump over nursing, even after nursing was part of your routine, is a real and complete way to keep feeding your baby your milk. It's not a fallback option.
+
+---
+
+**WHAT TO KNOW**
+
+Maybe your baby's started refusing the breast and pumping is how you want to keep your supply going. Maybe nipple pain resolved once you leaned into pumping more, even though the supply goal is still there. Maybe you're heading back to work and want one measurable system instead of juggling two. Maybe a partner or another caregiver is taking on more feeds and pumped milk makes that easier to hand off. Whatever the reason, this is less common than the other combo transitions, and it's worth saying plainly: the pump is a real option here, not a consolation prize for nursing not working out.
+
+**If pumping has only been occasional up to now, fit your flanges properly before you rely on it as your main system.** A flange that was fine for occasional use might not be right once pumping becomes your primary method for keeping your supply going.
+
+**Frequency matters more now than it did while you were still nursing.** Nursing was providing some of your stimulation even if pumping was already part of your routine. Once nursing drops out of the mix, the pump needs to fully replace whatever stimulation nursing was providing, which usually means building your pump schedule up rather than assuming your current frequency is enough.
+
+**Expect a short re-establishment period.** If nursing was doing real work for your supply, dropping it without adding compensating pump sessions can cause a temporary dip. Treat the first one to two weeks as a stabilization window rather than expecting your supply to hold steady from day one.
+
+---
+
+**WHAT TO DO**
+
+1. **Measure and fit your flanges now,** especially if pumping has been occasional rather than your main method.
+2. **Build your pump schedule to replace whatever stimulation nursing was providing,** which often means more sessions than you're currently doing.
+3. **Give it one to two weeks before judging output,** since a temporary dip during the switch is normal, not a sign it's failing.
+4. **Use hands-on pumping technique** (breast massage before and during, hand expression at the end) to get the most out of each session while things stabilize.
+5. **Find the EP community when you're ready.** r/ExclusivelyPumping and similar spaces are full of people who've made exactly this move and can talk through the specific logistics.
+
+---
+
+**WHAT TO WATCH FOR**
+
+A temporary supply dip in the first week or two is expected and usually resolves as your pump schedule catches up to what nursing was providing. If output keeps declining past two weeks despite consistent sessions, check flange fit and frequency first; those are the most common fixable culprits. As always, fever with breast pain and flu-like symptoms means call your OB that day.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+**Flange fit, quick version:** measure your nipple diameter at its widest point, add 2 to 3mm, and match that to your pump's flange size options. Most pumps ship with a size that fits a minority of people well, so don't assume the default is right.
+
+**Hands-on pumping:** massage before and during the session, and hand express for a minute after flow slows. This combination has been shown to meaningfully increase output compared to passive pumping alone.
+
+---
+
+### T-WEAN — General Weaning Support
+
+**WEANING, THE GENERAL PLAYBOOK.**
+Path Change • Any path → Supply wind-down reference • Estimated read time: 4 min
+
+---
+
+**LEAD LINE**
+
+However you got here, whatever you're weaning from, your body handles this the same basic way. Here's what to expect and how to make it easier.
+
+---
+
+**WHAT TO KNOW**
+
+Weaning means reducing milk removal, whether that's nursing sessions, pump sessions, or both, until your body responds by winding production down. The mechanism is the same no matter which specific transition brought you here: less demand leads to less supply, over roughly one to three weeks for the active process, sometimes with traces continuing for longer after that.
+
+**Gradual is almost always more comfortable than abrupt.** Dropping one session every two to three days gives your body time to adjust production down in step with the reduced demand. Stopping cold turkey, all sessions at once, is possible but it significantly raises your risk of engorgement, blocked ducts, and mastitis. If you have any flexibility in your timeline, gradual is the easier path physically.
+
+**Sometimes abrupt is necessary, and that's okay too.** A new medication, a medical procedure, or another urgent situation can require stopping quickly. If that's your situation, the comfort measures below still apply; you'll just be leaning on them more heavily since your body doesn't get the gradual runway.
+
+**What your body actually does.** As sessions decrease, prolactin drops and your body reabsorbs the milk it's no longer being asked to produce. You'll likely notice fullness and pressure after each dropped session, easing within a day or two as your body catches up. Leaking, especially triggered by things like hearing a baby cry or a warm shower, is common for a while even after you feel mostly done.
+
+**The emotional side is real, whatever the reason for weaning.** Some people feel relief. Some feel grief. Most feel some mix of both, sometimes shifting day to day. None of that needs an explanation, and it doesn't mean you made the wrong call. If what you're feeling goes beyond the normal ups and downs of this transition (if it's persistent, heavy, or hard to shake) that's worth talking to someone about.
+
+---
+
+**WHAT TO DO**
+
+1. **Drop one session every two to three days if you can.** Start with whichever session produces the least or matters least in your schedule.
+2. **Relieve fullness without fully emptying.** A brief hand expression or short pump session takes the pressure off without sending a "keep producing" signal.
+3. **Use cold compresses after relief expression.** Ice packs wrapped in a thin cloth, or refrigerated cabbage leaves, both help with inflammation and discomfort.
+4. **Consider sage tea if you want extra support.** The evidence is limited but it's safe to try and has a long traditional use for reducing supply.
+5. **Wear a supportive, non-binding bra.** Skip underwire during this stretch, and avoid very tight binding; both extremes (no support, or too much compression) raise your risk of complications.
+
+---
+
+**WHAT TO WATCH FOR**
+
+Your risk of mastitis is highest in the window where supply is still relatively high but removal frequency is dropping. Watch for:
+- Fever above 101°F
+- Flu-like symptoms (body aches, chills, fatigue) along with breast pain
+- A hard, red, or warm patch that doesn't resolve within a day of the next dropped session
+
+If you notice fever plus breast pain plus flu symptoms, call your OB or provider the same day. Mastitis during weaning is treated the same as mastitis at any other time: antibiotics, and continued gentle expression, not full stopping.
+
+A milk bleb (a small white dot on the nipple) can also show up during weaning. It usually resolves on its own; mention it to your IBCLC if it's painful or sticks around.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Want to go deeper?"]**
+
+**If you need to wean quickly:**
+- Lean harder on relief expression and cold compresses since you're skipping the gradual runway
+- Watch mastitis signs even more closely during the first week
+- Consider talking to your OB about lactation-suppression options if your situation calls for a faster timeline
+
+**A rough weaning timeline for reference:**
+- Days 1 to 3 after a session drop: fullness, possible leaking
+- Days 4 to 7: noticeably less fullness as supply adjusts
+- Weeks 2 to 3: most active weaning complete for most people
+- Beyond that: occasional traces can persist for weeks or longer, which is normal
+
+---
+
+### T-REL — Relactation
+
+**BRINGING YOUR MILK BACK.**
+Path Change • Formula → Any Nursing Path (Relactation) • Estimated read time: 2–3 min
+
+---
+
+**LEAD LINE**
+
+Wanting to relactate is a real, valid thing to want, and it's also something you shouldn't try to figure out alone. This module is a starting point, not a full guide, on purpose.
+
+---
+
+**WHAT TO KNOW**
+
+Relactation (bringing back a milk supply after it's gone or mostly gone) is possible. It's also highly variable: how long milk has been absent, how established your supply was before, your individual biology, and how much sustained effort you can put in all affect the outcome. Some people relactate to a full exclusive nursing supply. Some land somewhere in a combination of nursing and formula, which is a completely valid place to land, not a lesser version of the goal.
+
+**What it generally involves** is frequent, sustained stimulation, both nursing attempts and pumping, kept up consistently over time. Most people see some meaningful supply response somewhere between two and eight weeks of consistent effort, though that range is wide because the variables are wide.
+
+**There are tools that sometimes help,** and this is exactly the kind of decision an IBCLC and your doctor should be making with you, not something to figure out from an app. Galactagogues have modest evidence behind them. Domperidone is used off-label for this purpose in some countries; it's not FDA-approved for this use in the US. Herbal options exist with limited evidence either way. None of these are a fix on their own, and none of them should be your first move without medical guidance.
+
+**This is the one place in the app where the honest answer is: start with an IBCLC, not with us.** Relactation is complex enough, and variable enough, that the right first step is a lactation consultant who can assess your specific situation, not a self-guided plan.
+
+---
+
+**WHAT TO DO**
+
+1. **Find an IBCLC before you do anything else.** This is the actual first step, not a suggestion to consider later.
+2. **Talk to your doctor about whether galactagogues or other supports make sense for your situation,** rather than starting any of them on your own.
+3. **Set your own definition of success now, if you can.** A full return to exclusive nursing and a combination of nursing and formula are both real, good outcomes. Deciding what you're aiming for (or staying open to either) can help the process feel less like a pass/fail test.
+4. **Be patient with the timeline.** Two to eight weeks is a wide range for a reason; your body's response is your body's response, not a reflection of how hard you're trying.
+
+---
+
+**WHAT TO WATCH FOR**
+
+Relactation attempts involve a lot of stimulation, sometimes more frequent than you're used to. Watch for the same mastitis signs as any other transition: fever, flu-like symptoms with breast pain, or a hard red area that doesn't resolve. Call your OB the same day if you notice that combination. Beyond that, your IBCLC is your main point of contact for troubleshooting the process itself.
+
+---
+
+**[CRASH-COURSE SNIPPET — expandable: "Find an IBCLC"]**
+
+Look for a board-certified lactation consultant (the credential is IBCLC) through your hospital's lactation department, your pediatrician's referral network, or the International Board of Certified Lactation Consultants' directory. Many offer virtual consults if an in-person visit isn't accessible right away.
+
+---
+
 ## Section 4: Protocol Change Summary
 
 ### New Module IDs
@@ -766,16 +1193,20 @@ The transition modules require clinical review, particularly:
 
 ## Open Questions for Ashley to Decide
 
-Before this design goes to the protocol, a few choices that should be made at the PM level:
+**All four resolved by Ashley on 2026-07-08, plus a fifth added during test build-out. All decisions took the recommended option:**
 
-**1. The relactation module scope.** T-REL as designed is intentionally thin — it acknowledges relactation is possible and routes to an IBCLC. Should it be deeper? The risk of going deeper is that the app positions itself as a relactation guide, which may exceed clinical scope. Recommendation: keep thin and route to clinical support. But Ashley should decide.
+**1. The relactation module scope. RESOLVED: keep thin.** T-REL acknowledges relactation is possible and routes to an IBCLC rather than coaching the process in-app.
 
-**2. The "formula exit" as a destination vs. an endpoint.** When a user transitions to formula, does the app's session tracking and content continue? Or does the feeding journey conclude? A formula-only user still has questions (how much, safe prep, troubleshooting formula issues) — but that's a different content scope than lactation support. Recommendation: the transition modules give her what she needs for the transition; a "Formula Feeding Guide" module set is a scope decision for v1.1. The transition modules close the lactation chapter, not her parenthood.
+**2. The "formula exit" as a destination vs. an endpoint. RESOLVED: endpoint.** The transition module gives her what she needs for the transition itself; a "Formula Feeding Guide" module set is explicitly deferred to a v1.1 scope decision, not built now.
 
-**3. The hub entry language.** "Thinking about changing how you feed?" is the proposed hub entry. Ashley should gut-check this — does it feel inviting or interrogating? An alternative: "Your path, your choice. Here's where to go." This is a UX copy decision that should go through the brand voice review.
+**3. The hub entry language. RESOLVED: "Thinking about changing how you feed?"** (the original proposal, not the "Your path, your choice" alternative).
 
-**4. The user data on path changes.** Should the app track path transitions in user analytics? Transition patterns are high-signal product data (e.g., if 40% of Path A users transition to Formula between weeks 2 and 4, that's a content gap signal for that period). Recommendation: yes, track — but anonymized, aggregate only, never user-facing.
+**4. The user data on path changes. RESOLVED: yes, track.** Anonymized, aggregate only, never user-facing or tied to an identifiable profile in reporting.
+
+**5. Progress persistence across a switch (added 2026-07-08, not in the original four). RESOLVED: persist everything.** Guide-completion progress in Getting Started carries over in full regardless of switch direction. This is already reflected in `e2e/tests/flow-path-personalization.spec.ts`.
+
+See memory `project_path_switching_feature.md` for the full rationale behind each.
 
 ---
 
-*This proposal is for review only. No changes to protocol-outline-v1.md should be made until Ashley approves the design direction.*
+*Content and open questions are resolved. This proposal still needs an engineering/frontend pass (Path Change hub, transition module screens, contextual CTAs, switch backend) before anything ships — see the phased implementation plan tracked in the same memory file.*
