@@ -5,9 +5,13 @@
  */
 import { test as base, Page, Route } from '@playwright/test'
 import { TEST_USERS, TestUserKey } from './test-users'
+import { getSession, injectSession } from './session-auth'
 
 type AuthFixtures = {
   signedInPage: Page
+  signedInPageNursing: Page
+  signedInPageReturningA: Page
+  signedInPageReturningC: Page
   mockStripe: void
 }
 
@@ -40,33 +44,19 @@ export async function mockStripeRoutes(page: Page, baseURL: string) {
 }
 
 /**
- * Sign in via the UI sign-in form.
- * Returns when the Home screen is visible.
+ * Sign in programmatically via session injection.
+ *
+ * The app moved to passwordless magic-link auth, so there is no password form to
+ * drive. We obtain a real Supabase session for the user (they still have
+ * passwords from global-setup) and inject it into localStorage, then wait for
+ * the Home screen. See fixtures/session-auth.ts.
+ *
+ * Returns when the Home screen is reached.
  */
 export async function signInAs(page: Page, userKey: TestUserKey) {
   const user = TEST_USERS[userKey]
-  await page.goto('/')
-
-  // If session check routes to Home directly, we're done
-  const onHome = page.locator('[data-testid="home-screen"]').or(page.locator('text=Your plan')).first()
-  const onWelcome = page.locator('text=Sign in').first()
-
-  // Wait to see which screen loads
-  await Promise.race([
-    onHome.waitFor({ timeout: 5000 }).then(() => 'home'),
-    onWelcome.waitFor({ timeout: 5000 }).then(() => 'welcome'),
-  ]).catch(() => 'welcome')
-
-  // Check if already on home
-  if (await onHome.isVisible()) return
-
-  // Navigate to sign-in
-  await page.click('text=Sign in')
-  await page.fill('input[type="email"]', user.email)
-  await page.fill('input[type="password"]', user.password)
-  await page.click('button:has-text("Sign in")')
-
-  // Wait for home screen
+  const session = await getSession(user.email, user.password)
+  await injectSession(page, session)
   await page.waitForURL(/\/$|\/home/, { timeout: 15_000 })
 }
 
@@ -79,6 +69,36 @@ export const test = base.extend<AuthFixtures>({
   signedInPage: async ({ page, baseURL }, use) => {
     await mockStripeRoutes(page, baseURL ?? 'http://localhost:5173')
     await signInAs(page, 'returning')
+    await use(page)
+  },
+
+  // Path A (exclusive nursing) — needed anywhere a test depends on a guide
+  // that's gated to Path A/C (e.g. Latch & Positioning, hidden for Path B).
+  // 'returning' (used by signedInPage) is pre-seeded on Path B, so it can't
+  // cover that case on its own. NOTE: this signs in as 'newborn', a fresh-signup
+  // scenario user with no pre-existing profile/progress — use this for
+  // Path A content checks, but NOT for returning-user (complete profile,
+  // pre-existing progress) scenarios. Use signedInPageReturningA for those.
+  signedInPageNursing: async ({ page, baseURL }, use) => {
+    await mockStripeRoutes(page, baseURL ?? 'http://localhost:5173')
+    await signInAs(page, 'newborn')
+    await use(page)
+  },
+
+  // Genuine returning user, Path A (nursing) — complete profile, pre-existing
+  // progress. Use for returning-user scenarios that need Path A, as opposed to
+  // signedInPageNursing's fresh-signup 'newborn' persona.
+  signedInPageReturningA: async ({ page, baseURL }, use) => {
+    await mockStripeRoutes(page, baseURL ?? 'http://localhost:5173')
+    await signInAs(page, 'returningA')
+    await use(page)
+  },
+
+  // Genuine returning user, Path C (combination feeding) — complete profile,
+  // pre-existing progress.
+  signedInPageReturningC: async ({ page, baseURL }, use) => {
+    await mockStripeRoutes(page, baseURL ?? 'http://localhost:5173')
+    await signInAs(page, 'returningC')
     await use(page)
   },
 })
