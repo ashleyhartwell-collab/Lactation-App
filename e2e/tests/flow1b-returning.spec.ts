@@ -2,29 +2,17 @@
  * Flow 1B — Returning user sign-in and session restore
  * Uses the pre-seeded 'returning' user from global-setup.ts
  */
-import { test, expect } from '../fixtures/auth-fixture'
+import { test, expect, signInAs } from '../fixtures/auth-fixture'
 import { TEST_USERS } from '../fixtures/test-users'
 
 test.describe('Flow 1B — Returning user', () => {
 
   test('Sign in routes to Home with profile loaded', async ({ page }) => {
-    const user = TEST_USERS.returning
+    // Auth is now passwordless (magic-link); we authenticate via session
+    // injection instead of the removed password form. See fixtures/session-auth.ts.
+    await signInAs(page, 'returning')
 
-    await page.goto('/')
-
-    // Should see Welcome, not Home (no active session)
-    await expect(page.locator('text=Sign in')).toBeVisible({ timeout: 8000 })
-
-    // Tap sign-in link
-    await page.click('text=Sign in')
-    await expect(page.locator('text=Welcome back')).toBeVisible()
-
-    // Fill credentials
-    await page.fill('input[type="email"]', user.email)
-    await page.fill('input[type="password"]', user.password)
-    await page.click('button:has-text("Sign in")')
-
-    // Should route to Home
+    // Should be on Home
     await page.waitForURL(/\/$|\/home/, { timeout: 15_000 })
 
     // Profile should be loaded — This Week tab shows the 6-week plan with week navigation
@@ -55,7 +43,12 @@ test.describe('Flow 1B — Returning user', () => {
     await expect(page.locator('text=Sign in')).toBeVisible({ timeout: 8000 })
   })
 
-  test('Wrong password shows friendly error', async ({ page }) => {
+  // The app migrated from password-form login to passwordless magic-link auth,
+  // so there is no password field, wrong-password error, or forgot-password flow
+  // to assert anymore. These tests are skipped rather than deleted as a marker.
+  // TODO: replace with magic-link coverage (e.g. invalid-email handling and the
+  // "Send login link" confirmation) once that flow is specced.
+  test.skip('Wrong password shows friendly error', async ({ page }) => {
     await page.goto('/')
     await page.click('text=Sign in')
 
@@ -69,7 +62,7 @@ test.describe('Flow 1B — Returning user', () => {
     await expect(page.locator('text=Welcome back')).toBeVisible()
   })
 
-  test('Forgot password — always shows success message', async ({ page }) => {
+  test.skip('Forgot password — always shows success message', async ({ page }) => {
     await page.goto('/')
     await page.click('text=Sign in')
     await page.click('text=Forgot your password')

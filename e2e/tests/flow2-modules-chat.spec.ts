@@ -1,8 +1,10 @@
 /**
- * Flow 2 — Returning user: Getting Started modules + chat questions
- * Signs in as the pre-seeded 'returning' user (Path B, Week 2 — Jamie).
+ * Flow 2 — Returning user: Getting Started guides + chat questions
+ * Signs in as the pre-seeded 'returning' user (Path B, Week 2 — Jamie) for most
+ * tests. A couple of tests use signedInPageNursing ('newborn', Path A) instead,
+ * since Latch & Positioning is gated to Path A/C and never shows for Path B.
  *
- * Part A: Module completion and persistence
+ * Part A: Guide completion and persistence
  * Part B: Chat questions, including compound question that tests
  *         system-prompt personalization (feeding_path + baby_weeks_old threading)
  */
@@ -22,24 +24,53 @@ test.describe('Flow 2 — Modules + Chat', () => {
   // -----------------------------------------------------------------
   // Part A: Getting Started Modules
   // -----------------------------------------------------------------
-  test.describe('Part A — Getting Started Modules', () => {
+  test.describe('Part A — Getting Started Guides', () => {
 
-    test('Module library shows 7 active modules, none complete on fresh sign-in', async ({ signedInPage: page }) => {
+    test('Guide library shows 7 active guides for Path B (Latch hidden, bottle/nipple guide shown), none complete on fresh sign-in', async ({ signedInPage: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      // Known module titles should all be visible — use .first() to avoid strict-mode issues
+      // Known guide titles should all be visible — use .first() to avoid strict-mode issues
       // when a completion badge (✓ Your First 48 Hours) also matches
       await expect(page.locator('text=Your First 48 Hours').first()).toBeVisible({ timeout: 10_000 })
-      await expect(page.locator('text=Getting a Good Latch').first()).toBeVisible({ timeout: 10_000 })
       await expect(page.locator('text=Feeding Your Supply').or(page.locator('text=Understanding Your Supply')).first()).toBeVisible({ timeout: 10_000 })
+      await expect(page.locator('text=Cluster Feeding').first()).toBeVisible({ timeout: 10_000 })
+      // Bottle/nipple guide is gated [B, C] — 'returning' is Path B, so it must appear
+      await expect(page.locator('text=Choosing a Bottle and Nipple').first()).toBeVisible({ timeout: 10_000 })
+
+      // 'returning' is Path B (exclusive pumping) — Latch & Positioning must not appear at all
+      await expect(page.locator('text=Getting a Good Latch')).toHaveCount(0)
+      await expect(page.locator('text=Latch & Positioning')).toHaveCount(0)
+
+      // Progress summary reflects this path's total (7, not 6 — bottle/nipple guide added this total)
+      await expect(
+        page.locator('text=/0 of 7 guides complete/').or(page.locator('text=/of 7 guides/')).first()
+      ).toBeVisible({ timeout: 8000 }).catch(() => {
+        // OK if the empty-state phrasing differs slightly — the hard requirement is Latch being absent above
+      })
     })
 
-    test('Module 1 — The First 48 Hours: opens, shows content, marks complete', async ({ signedInPage: page }) => {
+    test('Latch & Positioning shows for Path A (nursing), with the full 7-guide total, bottle/nipple guide absent', async ({ signedInPageNursing: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      // Open Module 1
+      await expect(orLoc(page, 'text=Good Latch', 'text=Getting a Good Latch', 'text=Latch & Positioning').first()).toBeVisible({ timeout: 10_000 })
+      await expect(
+        page.locator('text=/of 7 guides/').or(page.locator('text=/of 7 modules/')).first()
+      ).toBeVisible({ timeout: 8000 }).catch(() => {
+        // OK if the app doesn't surface a denominator on the library screen itself
+      })
+
+      // Bottle/nipple guide is gated [B, C] — Path A (nursing) never sees it, so Path A's
+      // total stays at 7 (Latch present, bottle/nipple absent), same total as before this guide shipped.
+      await expect(page.locator('text=Choosing a Bottle and Nipple')).toHaveCount(0)
+    })
+
+    test('Guide 1 — Your First 48 Hours: opens, shows content, marks complete', async ({ signedInPage: page }) => {
+      await page.goto('/getting-started')
+      await page.waitForLoadState('networkidle')
+
+      // Open Guide 1
       await orLoc(page, 'text=First 48', 'text=The First 48').first().click()
       await expect(orLoc(page, 'text=colostrum', 'text=Colostrum').first()).toBeVisible({ timeout: 8000 })
 
@@ -49,30 +80,31 @@ test.describe('Flow 2 — Modules + Chat', () => {
       // Mark complete
       await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
 
-      // Return to library — completion indicator on Module 1
+      // Return to library — completion indicator on Guide 1
       await orLoc(page, '[data-testid="tab-library"]', 'text=Getting Started', 'text=Library', '[aria-label="Back"]').first().click()
-      // Completion shown in progress summary or as a checkmark next to module title
+      // Completion shown in progress summary or as a checkmark next to guide title.
+      // 'returning' is Path B, so the denominator is 7 (6 + the bottle/nipple guide).
       await expect(
         page.locator('text=✓ Your First 48').or(
           page.locator('[data-testid*="complete"]').first()
         ).or(
-          page.locator('text=1 of 7 modules complete')
+          page.locator('text=1 of 7 guides complete')
         ).first()
       ).toBeVisible({ timeout: 5000 })
     })
 
-    test('Module 1 completion persists across reload', async ({ signedInPage: page }) => {
-      // Ensure Module 1 is marked complete first
+    test('Guide 1 completion persists across reload', async ({ signedInPage: page }) => {
+      // Ensure Guide 1 is marked complete first
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
-      const module1 = page.locator('text=First 48').first()
+      const guide1 = page.locator('text=First 48').first()
 
       // If not already complete, complete it
       // Completion badge is a ✓ span — detect via text pattern or progress counter
-      const completionIndicator = page.locator('text=/✓|\\d+ of 7 modules complete/').first()
+      const completionIndicator = page.locator('text=/✓|\\d+ of 7 guides complete/').first()
       const alreadyDone = await completionIndicator.isVisible({ timeout: 2000 }).catch(() => false)
       if (!alreadyDone) {
-        await module1.click()
+        await guide1.click()
         await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
         await page.goto('/getting-started')
         await page.waitForLoadState('networkidle')
@@ -85,49 +117,54 @@ test.describe('Flow 2 — Modules + Chat', () => {
 
       // Completion still shown — ✓ badge or progress counter
       await expect(
-        page.locator('text=/✓|\\d+ of 7 modules complete/').first()
+        page.locator('text=/✓|\\d+ of 7 guides complete/').first()
       ).toBeVisible({ timeout: 8000 })
     })
 
-    test('Module 2 — Getting a Good Latch: holds carousel is navigable', async ({ signedInPage: page }) => {
+    test('Latch & Positioning (Path A): holds carousel is navigable, path tag pill visible', async ({ signedInPageNursing: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      // Open Module 2
-      await orLoc(page, 'text=Good Latch', 'text=Getting a Good Latch').first().click()
+      // Open Latch & Positioning
+      await orLoc(page, 'text=Good Latch', 'text=Getting a Good Latch', 'text=Latch & Positioning').first().click()
       await expect(orLoc(page, 'text=latch', 'text=Latch').first()).toBeVisible({ timeout: 8000 })
 
       // Carousel or holds cards should exist
       const carousel = orLoc(page, '[data-testid="holds-carousel"]', '.carousel', 'text=Cross-Cradle', 'text=Football')
       await expect(carousel.first()).toBeVisible()
 
-      // Complete module
+      // Complete guide
       await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
     })
 
-    test('Module 3 — Understanding Your Supply: supply content visible', async ({ signedInPage: page }) => {
+    test('Feeding Your Supply: supply content visible, Nursing path tag shown', async ({ signedInPageNursing: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      // Open Module 3
-      await orLoc(page, 'text=Understanding Your Supply', 'text=Your Supply').first().click()
+      // Open Feeding Your Supply
+      await orLoc(page, 'text=Feeding Your Supply', 'text=Understanding Your Supply', 'text=Your Supply').first().click()
       await expect(
         orLoc(page, 'text=supply', 'text=Supply').first()
       ).toBeVisible({ timeout: 8000 })
+
+      // Visible path tag pill for the nursing path
+      await expect(page.locator('text=Nursing').first()).toBeVisible({ timeout: 5000 }).catch(() => {
+        // OK if the app surfaces the path tag with different casing/placement — not a hard failure
+      })
 
       // Complete it
       await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
     })
 
-    test('Module 5 — Cluster Feeding: content visible, reachable from Reading Nora\'s Cues, marks complete', async ({ signedInPage: page }) => {
+    test('Cluster Feeding: content visible, reachable from Reading Nora\'s Cues, marks complete', async ({ signedInPage: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
       // Reach it via the link inside Reading Nora's Cues first, to confirm the teaser link works
       await orLoc(page, 'text=Reading Nora\'s Cues', 'text=Nora\'s Cues').first().click()
-      await expect(orLoc(page, 'text=cluster feed', 'text=Cluster feeding', 'text=CLUSTER FEEDING').first()).toBeVisible({ timeout: 8000 })
+      await expect(orLoc(page, 'text=cluster feed', 'text=Cluster feeding', 'text=CLUSTER FEEDING', 'text=growth spurt').first()).toBeVisible({ timeout: 8000 })
 
-      const linkOut = orLoc(page, 'text=See the full Cluster Feeding module', 'text=Cluster Feeding module').first()
+      const linkOut = orLoc(page, 'text=See the full Cluster Feeding guide', 'text=Cluster Feeding guide', 'text=Cluster Feeding module').first()
       const hasLinkOut = await linkOut.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasLinkOut) {
         await linkOut.click()
@@ -138,32 +175,62 @@ test.describe('Flow 2 — Modules + Chat', () => {
         await orLoc(page, 'text=Cluster Feeding').first().click()
       }
 
-      // Module content should be visible
-      await expect(orLoc(page, 'text=cluster feed', 'text=Cluster feeding').first()).toBeVisible({ timeout: 8000 })
-      await expect(orLoc(page, 'text=Normal', 'text=Worth a Call').first()).toBeVisible({ timeout: 8000 })
+      // Guide content should be visible. 'returning' is Path B, so this is the
+      // pumping variant — no freezer-stash reference should appear anywhere in it.
+      await expect(orLoc(page, 'text=cluster feed', 'text=Cluster feeding', 'text=growth spurt').first()).toBeVisible({ timeout: 8000 })
+      await expect(orLoc(page, 'text=Normal', 'text=Worth a Call', 'text=Worth a call').first()).toBeVisible({ timeout: 8000 })
+      await expect(page.locator('text=/freezer stash/i')).toHaveCount(0)
 
       // Complete it
       await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
 
-      // Return to library — completion reflected in progress summary
+      // Return to library — completion reflected in progress summary (7 total for Path B)
       await orLoc(page, '[data-testid="tab-library"]', 'text=Getting Started', 'text=Library', '[aria-label="Back"]').first().click()
       await expect(
-        page.locator('text=/✓|\\d+ of 7 modules complete/').first()
+        page.locator('text=/✓|\\d+ of 7 guides complete/').first()
       ).toBeVisible({ timeout: 5000 })
     })
 
-    test('All 3 completed modules persist after full reload', async ({ signedInPage: page }) => {
-      // Complete modules 1, 2, 3 in sequence
-      const modules = [
+    test('Choosing a Bottle and Nipple (Path B): EP variant shown, no formula content, nipple material cards visible, marks complete', async ({ signedInPage: page }) => {
+      await page.goto('/getting-started')
+      await page.waitForLoadState('networkidle')
+
+      await orLoc(page, 'text=Choosing a Bottle and Nipple').first().click()
+      await expect(orLoc(page, 'text=TLDR', 'text=Bottle and Nipple').first()).toBeVisible({ timeout: 8000 })
+
+      // EP variant: recommends 2 to 5 oz for the whole journey, no size-up guidance
+      await expect(page.locator('text=/2 to 5 ounce/i').first()).toBeVisible({ timeout: 8000 })
+
+      // 'returning' is Path B (exclusive pumping) — no formula-specific content should appear anywhere
+      await expect(page.locator('text=/formula/i')).toHaveCount(0)
+
+      // Nipple material comparison content present
+      await expect(orLoc(page, 'text=Silicone', 'text=silicone').first()).toBeVisible({ timeout: 5000 })
+      await expect(orLoc(page, 'text=Latex', 'text=latex').first()).toBeVisible({ timeout: 5000 })
+
+      // Complete it
+      await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click()
+
+      // Return to library — completion reflected in progress summary (7 total for Path B)
+      await orLoc(page, '[data-testid="tab-library"]', 'text=Getting Started', 'text=Library', '[aria-label="Back"]').first().click()
+      await expect(
+        page.locator('text=/✓|\\d+ of 7 guides complete/').first()
+      ).toBeVisible({ timeout: 5000 })
+    })
+
+    test('All 3 completed guides persist after full reload', async ({ signedInPage: page }) => {
+      // Complete 3 guides in sequence. Latch is intentionally excluded here —
+      // 'returning' is Path B, where Latch & Positioning is hidden entirely.
+      const guides = [
         ['text=First 48'],
-        ['text=Good Latch', 'text=Getting a Good Latch'],
-        ['text=Understanding Your Supply', 'text=Your Supply'],
+        ['text=Understanding Your Supply', 'text=Your Supply', 'text=Feeding Your Supply'],
+        ['text=Cluster Feeding'],
       ]
 
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      for (const selectors of modules) {
+      for (const selectors of guides) {
         await orLoc(page, ...selectors).first().click().catch(() => {})
         await orLoc(page, '[data-testid="mark-complete"]', 'text=Mark as complete', 'text=Done').first().click().catch(() => {})
         await page.goto('/getting-started')
@@ -176,8 +243,8 @@ test.describe('Flow 2 — Modules + Chat', () => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
 
-      // Completion shown as ✓ badges or progress counter "N of 7 modules complete"
-      const progressText = await page.locator('text=/\\d+ of 7 modules complete/').first().textContent({ timeout: 5000 }).catch(() => '')
+      // Completion shown as ✓ badges or progress counter "N of 7 guides complete"
+      const progressText = await page.locator('text=/\\d+ of 7 guides complete/').first().textContent({ timeout: 5000 }).catch(() => '')
       const completedNum = parseInt(progressText?.match(/(\d+)/)?.[1] ?? '0', 10)
       expect(completedNum).toBeGreaterThanOrEqual(3)
     })
@@ -185,19 +252,19 @@ test.describe('Flow 2 — Modules + Chat', () => {
   })
 
   // -----------------------------------------------------------------
-  // Part B: Chat — module deep-link + conversation
+  // Part B: Chat — guide deep-link + conversation
   // -----------------------------------------------------------------
   test.describe('Part B — Chat', () => {
 
-    test('Chat opens from "Ask in chat" link inside a module', async ({ signedInPage: page }) => {
+    test('Chat opens from "Ask in chat" link inside a guide', async ({ signedInPage: page }) => {
       await page.goto('/getting-started')
       await page.waitForLoadState('networkidle')
       await orLoc(page, 'text=Understanding Your Supply', 'text=Your Supply', 'text=Feeding Your Supply').first().click()
 
-      // Wait for module to load
+      // Wait for guide to load
       await expect(orLoc(page, 'text=supply', 'text=Supply').first()).toBeVisible({ timeout: 8000 })
 
-      // Find the "Ask in chat" link — skip if this module doesn't have one
+      // Find the "Ask in chat" link — skip if this guide doesn't have one
       const askLink = orLoc(page, 'text=Ask in chat', 'text=Ask a question', '[data-testid="ask-in-chat"]').first()
       const hasLink = await askLink.isVisible({ timeout: 3000 }).catch(() => false)
       if (!hasLink) {

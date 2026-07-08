@@ -47,6 +47,8 @@ export const TEST_USERS = {
   },
   returning: {
     // Pre-seeded in global setup — has a complete profile already
+    // NOTE: this is the Path B returning user. Kept as 'returning' (rather than
+    // renamed 'returningB') so existing references throughout the suite don't churn.
     email: 'latched.qa+returning@gmail.com',
     password: 'TestPass123!',
     name: 'Jamie',
@@ -55,6 +57,30 @@ export const TEST_USERS = {
     feedingPath: 'B',
     expectedWeek: 2,
     expectedPathLabel: 'pumping',
+  },
+  returningA: {
+    // Pre-seeded in global setup — complete profile, Path A (nursing).
+    // Added alongside 'returning' (Path B) so returning-user tests can cover
+    // all three paths, not just B.
+    email: 'latched.qa+returningA@gmail.com',
+    password: 'TestPass123!',
+    name: 'Sarah',
+    babyName: 'Oliver',
+    dobOffsetDays: -14,
+    feedingPath: 'A',
+    expectedWeek: 2,
+    expectedPathLabel: 'nursing',
+  },
+  returningC: {
+    // Pre-seeded in global setup — complete profile, Path C (combination feeding).
+    email: 'latched.qa+returningC@gmail.com',
+    password: 'TestPass123!',
+    name: 'Maria',
+    babyName: 'Luna',
+    dobOffsetDays: -14,
+    feedingPath: 'C',
+    expectedWeek: 2,
+    expectedPathLabel: 'combination feeding',
   },
 } as const
 
