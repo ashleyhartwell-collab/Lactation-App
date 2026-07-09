@@ -83,12 +83,26 @@ to Home, **but the onboarding data entered in this run is not persisted**:
 - Consequently the This-Week **current-week indicator** always reflects the demo
   DOB (renders "Week 6 of 6"), regardless of the scenario's DOB.
 
-Also note: `upsert-profile` **requires `feeding_goal`** (400: "feeding_goal must
-be one of: 6_weeks, 3_months, 6_months, as_long_as_works, unsure"). The
-personalization "Goal" screen offers a **"Skip for now →"** control, but skipping
-it leaves `feeding_goal` unset and the profile upsert fails → **no profile row is
-created at all**. That is a plausible product bug (a skippable screen produces an
-unsaveable profile), worth a look independently of the tests.
+Also note: skipping the **"Skip for now →"** control on the personalization
+"Goal" screen made the profile upsert fail with a 400 ("feeding_goal must be one
+of: 6_weeks, 3_months, 6_months, as_long_as_works, unsure") → **no profile row is
+created at all**. A skippable screen producing an unsaveable profile is a real
+product bug.
+
+> **Correction (2026-07-09, on investigation):** the original framing above —
+> that "`upsert-profile` **requires** `feeding_goal`" — is **not accurate**. The
+> edge function ([`latched-backend/supabase/functions/upsert-profile/index.ts`])
+> validates `feeding_goal` **only when it is present** (`if (feeding_goal !==
+> undefined)`), the DB column is nullable ("NULL = not yet captured", migration
+> 00011), and only `baby_dob` is truly required. An **omitted** goal saves fine.
+> The observed 400 message is the *invalid-value* path, which fires only when the
+> field is **present but empty** — i.e. the Goal screen's "Skip for now" is
+> **sending `feeding_goal: ""`** instead of omitting the key (the brief says skip
+> should "save nothing"). Root cause = frontend sending an empty value, not a
+> backend requirement. Fixes: (1) backend hardened to treat `""`/`null` optional
+> enums as omitted; (2) Lovable brief `lovable-briefs/lovable-goal-skip-omit-fix.md`
+> to omit the field on skip. The same empty-value trap applied to
+> `feeding_preference` and is covered by the same backend change.
 
 **Impact on the tests:** the scenario tests verify the onboarding UI end-to-end
 (reach Home, plan loads, week navigation present, no "Week 7"), but they cannot
