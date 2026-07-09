@@ -73,28 +73,44 @@ test.describe('Flow — Path Change hub and transition modules', () => {
       await expect(page.locator('text=/No judgment, no pressure to explain/i')).toBeVisible({ timeout: 8000 }).catch(() => {})
     })
 
-    test('Hub browse list surfaces all 11 transition module titles', async ({ signedInPageReturningA: page }) => {
+    // NOTE: written to stay valid whether or not the Phase 5 review-gate
+    // (docs/lovable/lovable-brief-path-change-review-gate.md) has been pasted in
+    // yet. That update makes a module's presence in the browse list conditional
+    // on a `reviewed` flag (all default to false until Ashley's IBCLC clears
+    // them), but explicitly guarantees direct route access always works
+    // regardless of review status (see that brief's Part 4). So this checks
+    // "discoverable in the browse list OR reachable directly" per module,
+    // rather than asserting unconditional browse-list visibility, which would
+    // start failing the moment any module's reviewed flag is still false.
+    test('Every one of the 11 transition modules is either browsable from the hub or reachable directly', async ({ signedInPageReturningA: page }) => {
+      const modules = [
+        { id: 'T-A-F', title: 'STOPPING NURSING' },
+        { id: 'T-A-B', title: 'SWITCHING TO THE PUMP' },
+        { id: 'T-B-F', title: 'HANGING UP THE PUMP' },
+        { id: 'T-C-F', title: 'FINISHING THE MILK CHAPTER' },
+        { id: 'T-B-A', title: 'TRYING THE BREAST AGAIN' },
+        { id: 'T-A-C', title: 'ADDING SUPPLEMENTATION' },
+        { id: 'T-B-C', title: 'ADDING FORMULA TO YOUR EP ROUTINE' },
+        { id: 'T-C-A', title: 'MOVING TOWARD NURSING ONLY' },
+        { id: 'T-C-B', title: 'MOVING TOWARD PUMPING ONLY' },
+        { id: 'T-WEAN', title: 'WEANING, THE GENERAL PLAYBOOK' },
+        { id: 'T-REL', title: 'BRINGING YOUR MILK BACK' },
+      ]
+
       await page.goto('/path-change')
       await page.waitForLoadState('networkidle')
 
-      const titles = [
-        'STOPPING NURSING',
-        'SWITCHING TO THE PUMP',
-        "HANGING UP THE PUMP",
-        'FINISHING THE MILK CHAPTER',
-        'TRYING THE BREAST AGAIN',
-        'ADDING SUPPLEMENTATION',
-        'ADDING FORMULA TO YOUR EP ROUTINE',
-        'MOVING TOWARD NURSING ONLY',
-        'MOVING TOWARD PUMPING ONLY',
-        'WEANING, THE GENERAL PLAYBOOK',
-        'BRINGING YOUR MILK BACK',
-      ]
+      for (const mod of modules) {
+        const browsable = await page.locator(`text=/${mod.title}/i`).first().isVisible().catch(() => false)
+        if (browsable) continue
 
-      for (const title of titles) {
-        await expect(
-          page.locator(`text=/${title}/i`).first()
-        ).toBeVisible({ timeout: 8000 })
+        // Not in the browse list (likely pending review) — confirm it's still
+        // reachable directly, per the review-gate brief's Part 4 guarantee.
+        await page.goto(`/path-change/${mod.id}`)
+        await page.waitForLoadState('networkidle')
+        await expect(page.locator(`text=/${mod.title}/i`).first()).toBeVisible({ timeout: 8000 })
+        await page.goto('/path-change')
+        await page.waitForLoadState('networkidle')
       }
     })
 
@@ -218,18 +234,29 @@ test.describe('Flow — Path Change hub and transition modules', () => {
     // shows only one destination, "Bringing your milk back" (routes to T-REL),
     // not a full Nursing/Exclusive Pumping/Combination Feeding breakdown. This
     // matches the design intent that Formula's only outbound path is relactation.
-    test('Selecting Formula as current path shows only "Bringing your milk back" as the destination', async ({ signedInPageReturningA: page }) => {
+    //
+    // NOTE: once the Phase 5 review-gate ships (docs/lovable/lovable-brief-path-
+    // change-review-gate.md), T-REL defaults to reviewed: false, so this
+    // destination may show the "More options coming soon" placeholder instead
+    // of "Bringing your milk back" until Ashley's IBCLC clears it. This test
+    // accepts either outcome for that specific line, but always asserts the
+    // Nursing/Exclusive Pumping/Combination Feeding breakdown never appears,
+    // that part of the design is not review-gate-dependent.
+    test('Selecting Formula as current path never shows a full A/B/C breakdown', async ({ signedInPageReturningA: page }) => {
       await page.goto('/path-change')
       await page.waitForLoadState('networkidle')
 
       await page.locator('text=Formula').first().click()
-      await expect(page.locator('text=Bringing your milk back')).toBeVisible({ timeout: 8000 })
 
-      // Should NOT show a Nursing/Exclusive Pumping/Combination Feeding breakdown
-      // in the "and I'm thinking about" list for this case.
       const destinationList = page.locator('text=AND I\'M THINKING ABOUT').locator('..')
       await expect(destinationList.locator('text=Exclusive Pumping')).toHaveCount(0)
       await expect(destinationList.locator('text=Combination Feeding')).toHaveCount(0)
+
+      // Either the real destination or the pending-review placeholder should
+      // show, never an empty gap with no explanation.
+      const relVisible = await page.locator('text=Bringing your milk back').isVisible().catch(() => false)
+      const placeholderVisible = await page.locator('text=/more options coming soon/i').isVisible().catch(() => false)
+      expect(relVisible || placeholderVisible).toBe(true)
     })
   })
 
