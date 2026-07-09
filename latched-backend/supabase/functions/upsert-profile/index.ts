@@ -36,6 +36,11 @@
 // Returns 400 if baby_dob is missing or in the future.
 // Returns 400 if breast_anatomy contains invalid condition or laterality values.
 // Returns 400 if pump_models contains an unrecognised model string.
+//
+// feeding_preference and feeding_goal are optional: an omitted, empty ("") or null
+// value leaves the column untouched and is NOT a 400. Only a present, non-empty,
+// out-of-enum value is rejected. This keeps the "Skip for now" personalization
+// screens saveable (they must save nothing for the skipped field, per the brief).
 
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -254,7 +259,11 @@ serve(async (req: Request) => {
   };
   if (display_name !== undefined) upsertData.display_name = display_name;
   if (baby_display_name !== undefined) upsertData.baby_display_name = baby_display_name;
-  if (feeding_preference !== undefined) {
+  // Optional enum. Treat an empty string / null the same as "not provided" — a
+  // skipped personalization screen ("Skip for now") should save nothing for this
+  // field, not send an empty value that fails validation and aborts the whole
+  // upsert. Only a present, non-empty, invalid value is a 400.
+  if (feeding_preference != null && feeding_preference !== '') {
     if (!VALID_FEEDING_PREFERENCES.has(feeding_preference)) {
       return json(
         { error: `feeding_preference must be one of: ${[...VALID_FEEDING_PREFERENCES].join(', ')}` },
@@ -265,7 +274,10 @@ serve(async (req: Request) => {
   }
   if (validatedAnatomy !== undefined) upsertData.breast_anatomy = validatedAnatomy;
   if (validatedPumpModels !== undefined) upsertData.pump_models = validatedPumpModels;
-  if (feeding_goal !== undefined) {
+  // Optional enum — same rule as feeding_preference above. An omitted OR empty/null
+  // feeding_goal leaves the column untouched (NULL = "not yet captured"); it is not a
+  // 400. The Goal screen's "Skip for now" must be saveable, per the onboarding brief.
+  if (feeding_goal != null && feeding_goal !== '') {
     if (!VALID_FEEDING_GOALS.has(feeding_goal)) {
       return json(
         { error: `feeding_goal must be one of: ${[...VALID_FEEDING_GOALS].join(', ')}` },
