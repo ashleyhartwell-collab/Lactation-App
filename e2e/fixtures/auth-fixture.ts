@@ -12,6 +12,7 @@ type AuthFixtures = {
   signedInPageNursing: Page
   signedInPageReturningA: Page
   signedInPageReturningC: Page
+  signedInPageReturningAWeek4: Page
   mockStripe: void
 }
 
@@ -99,6 +100,15 @@ export const test = base.extend<AuthFixtures>({
   signedInPageReturningC: async ({ page, baseURL }, use) => {
     await mockStripeRoutes(page, baseURL ?? 'http://localhost:5173')
     await signInAs(page, 'returningC')
+    await use(page)
+  },
+
+  // Genuine returning user, Path A, day 28 postpartum — added specifically for
+  // T-A-B Window 3 (days 15-42) coverage in flow-path-change-hub.spec.ts, since
+  // no other Path A fixture lands in that day range.
+  signedInPageReturningAWeek4: async ({ page, baseURL }, use) => {
+    await mockStripeRoutes(page, baseURL ?? 'http://localhost:5173')
+    await signInAs(page, 'returningAWeek4')
     await use(page)
   },
 })

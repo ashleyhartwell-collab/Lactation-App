@@ -82,6 +82,21 @@ export const TEST_USERS = {
     expectedWeek: 2,
     expectedPathLabel: 'combination feeding',
   },
+  returningAWeek4: {
+    // Pre-seeded in global setup — complete profile, Path A (nursing), day 28.
+    // Added specifically to cover T-A-B's Window 3 (days 15-42) content variant —
+    // none of the existing fixtures land in that range (newborn=day 0, returningA
+    // /returning/returningC=day 14, pastWeek6=day 70). See
+    // e2e/tests/flow-path-change-hub.spec.ts.
+    email: 'latched.qa+returningAWeek4@gmail.com',
+    password: 'TestPass123!',
+    name: 'Priya',
+    babyName: 'Amara',
+    dobOffsetDays: -28,
+    feedingPath: 'A',
+    expectedWeek: 4,
+    expectedPathLabel: 'nursing',
+  },
 } as const
 
 export type TestUserKey = keyof typeof TEST_USERS

@@ -76,9 +76,10 @@ export default async function globalSetup() {
   //    (used by flow1b, flow2, flow3, cross-cutting, and flow-path-personalization)
   // -----------------------------------------------------------------------
   const returningUsers = [
-    TEST_USERS.returning,   // Path B
-    TEST_USERS.returningA,  // Path A
-    TEST_USERS.returningC,  // Path C
+    TEST_USERS.returning,        // Path B
+    TEST_USERS.returningA,       // Path A
+    TEST_USERS.returningC,       // Path C
+    TEST_USERS.returningAWeek4,  // Path A, day 28 — T-A-B Window 3 coverage
   ]
 
   for (const returningUser of returningUsers) {
