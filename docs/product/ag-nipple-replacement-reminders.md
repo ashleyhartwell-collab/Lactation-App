@@ -2,6 +2,7 @@
 
 **Status:** DRAFT — content ready for review; not yet added to `latched-backend/scripts/data/ag-content.cjs` or seeded via migration.
 **Prepared:** 2026-07-08
+**Corrected:** 2026-07-08 — the trigger IDs originally proposed here (AG-023 through AG-030) collide with real, already-shipped content: AG-023 (IGT/breast reduction), AG-024 (flat/inverted nipples), and AG-025 (breast implants) all already exist in `00013_companion_seed.sql` and `latched-backend/scripts/data/ag-content.cjs`. Confirmed AG-025 is the current highest in-use ID, checked against both the main tree and the parallel `claude/eloquent-bohr-a6b087` worktree, so this doc now uses AG-026 through AG-033 instead.
 **Depends on:** `docs/product/getting-started-bottle-nipple-guide.md` shipping first — these nudges link out to it and have nothing to point to otherwise.
 
 ## Mechanism
@@ -14,14 +15,14 @@ Every 6 weeks, starting week 6, per Ashley's call (2026-07-08). Seeding 8 occurr
 
 | Trigger ID | Target week | `dob_offset_min` / `dob_offset_max` (days, ±3 day window) |
 |---|---|---|
-| AG-023 | Week 6 | 39 / 45 |
-| AG-024 | Week 12 | 81 / 87 |
-| AG-025 | Week 18 | 123 / 129 |
-| AG-026 | Week 24 | 165 / 171 |
-| AG-027 | Week 30 | 207 / 213 |
-| AG-028 | Week 36 | 249 / 255 |
-| AG-029 | Week 42 | 291 / 297 |
-| AG-030 | Week 48 | 333 / 339 |
+| AG-026 | Week 6 | 39 / 45 |
+| AG-027 | Week 12 | 81 / 87 |
+| AG-028 | Week 18 | 123 / 129 |
+| AG-029 | Week 24 | 165 / 171 |
+| AG-030 | Week 30 | 207 / 213 |
+| AG-031 | Week 36 | 249 / 255 |
+| AG-032 | Week 42 | 291 / 297 |
+| AG-033 | Week 48 | 333 / 339 |
 
 All 8 rows: `feature: "AG"`, `trigger_type: "time_based"`, `paths: ['B','C']`, `priority: 60` (below AG-007's 50, so it doesn't compete with higher-priority nudges if both are eligible in the same window), `held: false`.
 
@@ -49,3 +50,4 @@ Note: `inAppMessagePathB` and `inAppMessagePathC` are identical here since the u
 1. **Wire the `learnMore` deep link once the guide has a real route/slug.** Right now it's placeholder text; needs the actual guide URL once `docs/product/getting-started-bottle-nipple-guide.md` is approved and built in Lovable.
 2. **Confirm priority value (60) doesn't conflict with anything else firing in the same week windows** — a quick check against the full trigger table once this is ready to seed, not just this doc in isolation.
 3. **Extending past week 48** is intentionally left as a follow-up, not solved here.
+4. **Re-confirm AG-026 through AG-033 are still free immediately before seeding**, since other work is landing concurrently in this repo (see the 2026-07-08 correction note above). Don't assume this doc's ID range is still accurate by the time it's actually implemented — re-grep `ag-content.cjs` and the migrations directory first.
