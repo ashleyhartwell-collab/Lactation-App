@@ -115,6 +115,21 @@ Path label mapping:
   Path B → "6-week pumping"
   Path C → "6-week combination feeding"
 
+Computing [X] — the starting week:
+  [X] MUST be the SAME clamped current-week value used by the Protocol / This-Week
+  screen. Do NOT compute the week inline with a raw `floor(days / 7) + 1`; that
+  formula is unbounded and produces self-contradictory copy like "your 6-week plan
+  — starting at week 11" for a baby older than 6 weeks.
+
+  Reuse the shared utility: import and call `getCurrentWeek(babyDOB, babyWeeksOld)`
+  from src/utils/getCurrentWeek.ts (see the Protocol Personalization brief). It
+  returns a value clamped to 1–6:
+    Math.min(Math.max(Math.floor(days / 7) + 1, 1), 6)
+
+  So a baby 0 days old → week 1, 14 days → week 3, and anyone past 6 weeks
+  (e.g. 70 days) → week 6. The paywall headline and the Protocol screen must never
+  disagree on the current week.
+
 Remove any reference to the goal/reason from paywall copy. Name + path + week is the personalization. Everything else on the paywall screen stays the same.
 
 ---

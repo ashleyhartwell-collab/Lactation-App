@@ -15,6 +15,12 @@
 
 ## FLOW 1A — NEW USER ONBOARDING (FIRST SESSION, COMPLETE)
 
+> **Two different "week" numbers — don't conflate them:**
+> - **Weeks postpartum** = `baby_weeks_old` = `floor(days_since_DOB / 7)`. This is the baby's age and what the chat personalization uses (FLOW 2/3). A 14-day-old is **2 weeks postpartum**.
+> - **Plan week** = `getCurrentWeek()` = `min(max(floor(days / 7) + 1, 1), 6)` — the **+1**, clamped to 1–6. This is what the paywall headline ("starting at week X") and the Protocol "Week X of 6" show. A 14-day-old is on **plan week 3**.
+>
+> So a mom who is 2 weeks postpartum correctly sees a paywall/protocol **plan week 3** — not a contradiction. Both the paywall headline and the Protocol screen derive the plan week from the same clamped `getCurrentWeek()`, so they must always agree. Section titles below use **weeks postpartum**; the paywall/protocol row expectations use the **plan week**.
+
 ---
 
 ### 1A-i: Brand New Mom, Newborn (Week 0–1)
@@ -55,7 +61,7 @@
 
 ---
 
-### 1A-ii: Mom at Week 2
+### 1A-ii: Mom at Week 2 postpartum
 
 **Test data:**
 - Name: Jamie / Jamie
@@ -73,18 +79,18 @@
 | 3 | On Baby Name+DOB screen, tap "I'll add this later →" | Name field clears / skips; DOB picker still visible and required | | |
 | 4 | Set DOB to 14 days ago, tap Continue | Feeding Path screen | | |
 | 5 | Select Path B (Pumping), tap Continue | Paywall | | |
-| 6 | Verify paywall headline | "Jamie, here's your 6-week pumping plan — starting at week 2." | | |
+| 6 | Verify paywall headline | "Jamie, here's your 6-week pumping plan — starting at week 3." (14 days → floor(14/7)+1 = 3) | | |
 | 7 | Complete payment + account creation | Flows through to Goal → Anatomy → **Pump screen appears (Path B ✓)** | | |
 | 8 | On Pump screen, select "Spectra S2" | Selection registers | | |
 | 9 | Tap Continue | Home Transition → Home | | |
 | 10 | Check Supabase user_profiles | baby_name is null (skipped), feeding_path = 'B', pump saved | | |
-| 11 | Protocol tab | "Week 2 of 6" — Path B Week 2 content: "Milk volume increases and storage basics" | | |
+| 11 | Protocol tab | "Week 3 of 6" — Path B Week 3 content: "Maximizing output and pumping efficiency" | | |
 | 12 | Tap Week 1 pill | Shows Path B Week 1 content | | |
 | 13 | Tap Week 3 pill | Shows Path B Week 3 content | | |
 
 ---
 
-### 1A-iii: Mom at Week 3
+### 1A-iii: Mom at Week 3 postpartum
 
 **Test data:**
 - Name: Maria / Maria
@@ -97,10 +103,10 @@
 | # | Step | Expected | Result | Notes |
 |---|------|----------|--------|-------|
 | 1 | Complete full onboarding with above data | | | |
-| 2 | Paywall headline | "Maria, here's your 6-week combination feeding plan — starting at week 3." | | |
+| 2 | Paywall headline | "Maria, here's your 6-week combination feeding plan — starting at week 4." (21 days → floor(21/7)+1 = 4) | | |
 | 3 | Post-paywall: Pump screen appears (Path C ✓) | Pump screen shown | | |
 | 4 | Tap "Skip for now →" | Advances to Home Transition | | |
-| 5 | Protocol tab | "Week 3 of 6" — Path C content: "Finding your combination rhythm" | | |
+| 5 | Protocol tab | "Week 4 of 6" — Path C content: "Protecting your supply while reducing stress" | | |
 | 6 | Supply loop diagram visible in protocol? | N/A — that's Path B/supply module, not protocol | | |
 
 ---
