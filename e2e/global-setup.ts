@@ -80,6 +80,7 @@ export default async function globalSetup() {
     TEST_USERS.returningA,       // Path A
     TEST_USERS.returningC,       // Path C
     TEST_USERS.returningAWeek4,  // Path A, day 28 — T-A-B Window 3 coverage
+    TEST_USERS.returningAWeek10, // Path A, day 70 — T-A-B Window 4 coverage
   ]
 
   for (const returningUser of returningUsers) {

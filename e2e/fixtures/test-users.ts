@@ -97,6 +97,21 @@ export const TEST_USERS = {
     expectedWeek: 4,
     expectedPathLabel: 'nursing',
   },
+  returningAWeek10: {
+    // Pre-seeded in global setup — complete profile, Path A (nursing), day 70.
+    // Added specifically to cover T-A-B's Window 4 (43+ days) content variant with
+    // a returning-user fixture (pastWeek6 is auth-only, no profile, used only via
+    // the onboarding signup mock — it can't sign in as a returning user). See
+    // e2e/tests/flow-path-change-hub.spec.ts.
+    email: 'latched.qa+returningAWeek10@gmail.com',
+    password: 'TestPass123!',
+    name: 'Dana',
+    babyName: 'Wren',
+    dobOffsetDays: -70,
+    feedingPath: 'A',
+    expectedWeek: 6, // clamped, same as pastWeek6
+    expectedPathLabel: 'nursing',
+  },
 } as const
 
 export type TestUserKey = keyof typeof TEST_USERS
