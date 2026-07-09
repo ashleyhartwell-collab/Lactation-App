@@ -59,5 +59,11 @@ verify_jwt = false
 [functions.delete-account]
 verify_jwt = false
 
+# switch-feeding-path validates the Bearer JWT itself (401 on invalid) and handles
+# its own CORS preflight, exactly like upsert-profile — so the gateway must NOT
+# enforce JWT verification (that would reject the OPTIONS preflight / anon calls).
+[functions.switch-feeding-path]
+verify_jwt = false
+
 [analytics]
 enabled = false
