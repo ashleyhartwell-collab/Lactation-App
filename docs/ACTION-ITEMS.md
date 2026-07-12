@@ -1,9 +1,9 @@
 # Latched — Action Items
 
 Mark items done by changing `- [ ]` to `- [x]`.
-Items marked **🔴 critical path** block v1 launch. Items marked **⏳ waiting** require advisor or third party input. Items marked **🔵 decision** need Ashley's call before work can proceed.
+Items marked **🔴 critical path** block v1 launch. Items marked **🐛** are bugs found and fixed. Items marked **⏳ waiting** require advisor or third party input. Items marked **🔵 decision** need Ashley's call before work can proceed.
 
-Last updated: 2026-06-02
+Last updated: 2026-07-11
 
 ---
 
@@ -114,35 +114,81 @@ Last updated: 2026-06-02
 
 ## Financial Model
 
-*18-month rolling model in `Latched-Financial-Model-v1.xlsx`. 8 sheets: Cover, Assumptions, Revenue, COGS, OpEx, P&L, Unit Economics, Missing Inputs. All numbers formula-driven from the Assumptions sheet; blue cells = confirmed figures from docs; yellow cells = placeholders to fill in.*
+*18-month rolling model in `Latched-Financial-Model-v1.xlsx` (v1.1, updated 2026-07-11). 15 sheets: Cover, Assumption Register, Assumptions, Journey Map, GrowthEngine, Revenue, COGS, OpEx, P&L, Scenarios, TAM, Payer Model, Unit Economics, Missing Inputs, Change Log.*
+
+*All numbers formula-driven from the Assumptions sheet. **Blue text = input you can change. Black = formula, do not overwrite. Yellow fill = key lever worth stress-testing.** High-impact cells carry hover comments with source and rationale. **Start with the Assumption Register tab** — it lists every judgment call, its source, and how much to trust it. See the Change Log tab for what changed from v1.0.*
 
 ### Completed
-- [x] **🔴** Build financial model framework — `Latched-Financial-Model-v1.xlsx` created 2026-06-02. Covers: COGS (Stripe, LLM/API, Supabase, InfantRisk), OpEx (advisor fees split low/high, research incentives, marketing, salary), Revenue (18-month monthly build, B2B2C + B2C split), P&L, Unit Economics (LTV ~$47.28/user, CAC, LTV:CAC, payback).
-- [x] Model two revenue scenarios: B2C direct + B2B2C via IBCLC referral — both channels modeled with separate CAC rows and attribution split assumption (40% B2B2C base case from PRD).
 
-### Pending — Missing Inputs (fill in Assumptions sheet, in priority order)
+**Framework (2026-06-02)**
+- [x] **🔴** Build financial model framework — COGS, OpEx, Revenue, P&L, Unit Economics.
+- [x] Model two revenue scenarios: B2C direct + B2B2C via IBCLC referral.
 
-*Open `Latched-Financial-Model-v1.xlsx` → Assumptions tab. Yellow cells = needs input. Full notes on each are in the Missing Inputs sheet.*
+**v1.1 build-out (2026-07-11)**
+- [x] **🔴** Fill all 17 missing inputs (#1–16 below, all closed).
+- [x] **🐛 Bug fix** — LLM cost formula hardcoded `×4 weeks` while the "avg weeks active" cell sat disconnected. Now driver-linked.
+- [x] **🐛 Bug fix** — "Other validation costs" OpEx row was a literal `?` and was **excluded from the Total OpEx sum**, so the ruler test / Lovable / legal costs never hit cash. Now wired in (+$530 in M1).
+- [x] **🔴 Structural** — Replaced the abstract "15%/month growth rate" with a **mechanistic referral engine**: B2B2C = active IBCLC partners × referrals/partner × referral→paid conversion; B2C = marketing spend ÷ CAC. Growth is now derived from a countable acquisition mechanism, not assumed.
+- [x] **Scenarios tab** — Conservative / Base / Aggressive driven by partner-onboarding rate (3 / 5 / 8 per month). Breakeven M13 / M12 / M10.
+- [x] **TAM tab** — Top-down sizing from CDC/NCHS (3,628,934 US births, 2024 final) × ~83% breastfeeding initiation (CDC NIS-Child) = ~3.0M TAM population. Confirms **market size is not the constraint** — every scenario captures <0.3% of SAM. Acquisition efficiency is the binding constraint.
+- [x] **Payer Model tab** — Self-contained sponsored-coverage scenario (employer / health plan / hybrid subsidy). Does not feed the B2C model.
+- [x] **Correction** — Separated **member LTV (one-time — a birth does not renew)** from **contract ARR (recurring — the sponsor gets a new birth cohort every year)**. Earlier framing wrongly implied a per-member subscription.
+- [x] **Scope: 15-month, four-peak journey** — extended from 6 weeks → 15 months per CDC NIS-Child weaning data. See Journey Map tab.
+- [x] **Journey Map tab** — CDC-sourced evidence base (NIS-Child 2022, n=19,309) for the four engagement peaks and the active-weeks assumption.
+- [x] **Audit trail** — Assumption Register (27 live-linked entries with confidence / source / rationale / impact), native hover comments on high-impact cells, Cover read-me, Change Log. Purged 9 stale "Fill in:" notes that contradicted filled cells.
+- [x] **Payer value narrative** — `business/Latched-Payer-Value-Narrative.docx`, written for a benefits leader or plan CMO.
 
-- [ ] **🔴 #1** Post-M7 monthly growth rate (%) — drives all M8-M18 revenue. Suggest 20% base case; validate after 60 days live.
-- [ ] **🔴 #2** Monthly paid marketing budget post-launch ($) — unlocks B2C CAC math. Start with $500-1,000/month.
-- [ ] **#3** Smart-FAQ queries per user per week — needed for LLM cost / COGS. Estimate 3-5 while building; validate with pilot users.
-- [ ] **#4** B2B2C CAC — estimated cost per referred user ($). Likely $5-15 (printing + outreach); confirm after first IBCLC partner is onboarded.
-- [ ] **#5** B2C CAC conservative/high scenario ($) — use Meta benchmark $50-80 in the High column.
-- [ ] **#6** Founder salary ($/month) — $0 if bootstrapping; enter amount if drawing salary. Key for burn rate / runway.
-- [ ] **#7** IBCLC design partner outreach cost/month ($) — printing, shipping, outreach. Est. $50-100/month.
-- [ ] **#8** Supabase upgrade threshold (# users) — when to move from free → Pro ($25/mo). Est. 200-500 users.
-- [ ] **#9–11** Phase 0 one-time costs: printable ruler test incentives, WTP study cost, legal fees (privacy policy + advisor agreement).
-- [ ] **#12** Avg moms referred per IBCLC per month — from pilot data; est. 2-5/month per partner.
-- [ ] **#13** IBCLC advisor ongoing monthly hours (post-launch) — negotiate with advisor; likely 4-8 hrs/month.
-- [ ] **#14–15** Other SaaS tools ($15-30/mo) and contractor/freelance budget ($/month).
-- [ ] **#16** Lovable Pro / prototype build cost — check current Lovable pricing (~$25-50/month).
+### Key findings from the v1.1 work
 
-### Still pending from original scope
-- [ ] **🔵** Latch Module illustration scope decision: full dual-POV ($19K-37K) vs. Mother's POV limited to Phase 5-6 only (~$15K-29K) — decision needed before illustrator contract. See `BuyVsBuild_Latch_Comparison_Module.docx` Option 1 cost table. **Add to model once decided.**
-- [ ] Add cash flow timeline column: map each cost line to the phase/week it is incurred (aligns with BvB 24-week timeline). Can do once illustration scope is decided.
-- [ ] Identify costs deferrable to post-revenue without blocking v1 launch — review model once Missing Inputs (#1-8) are filled.
-- [ ] Set a pre-launch spend ceiling and flag items that would breach it — do this pass after filling in founder salary and marketing budget.
+- **Paid B2C is structurally thin.** At $49, LTV:CAC is only **1.41x** (vs 3x healthy). The **referral channel is 4.24x**. This is why growth is now modeled around IBCLC referral, not paid acquisition.
+- **Pricing is the single biggest unlock.** At **$99**, B2C reaches **2.86x** and referral **8.59x**. The 15-month four-peak scope is what justifies the price.
+- **The payer route breaks the CAC equation entirely** — the sponsor *is* the distribution, so consumer CAC → $0. One contract ≈ 40 IBCLC partners ≈ 8 months of partner onboarding.
+- **Median weaning is ~12 months** (among mothers who pass 6 weeks). A 12-month product would have ended exactly at the median weaning event.
+- **Biggest cliff in year one is solids** — 12.9% of remaining mothers stop between month 6 and 7.
+
+### 🔴 MUST VALIDATE — the six placeholder assumptions
+
+*These carry most of the model's risk. All flagged red in the Assumption Register. Everything else is Sourced or Benchmarked.*
+
+- [ ] **🔴** **Referrals per IBCLC per month** (`Assumptions!C18`, currently 3) — core driver of all B2B2C volume. Validate with existing design partners.
+- [ ] **🔴** **New IBCLC partners onboarded per month** (`Assumptions!C79`, currently 5) — **THE growth lever.** Nearly all revenue variance traces here.
+- [ ] **🔴** **Referral → paid conversion** (`Assumptions!C81`, currently 50%) — a warm handoff from a trusted IBCLC should convert well, but unproven.
+- [ ] **🔴** **Willingness to pay** (`TAM!C9`, currently 30%) — largest swing in SAM. Held at 30% by decision, pending the WTP study.
+- [ ] **🔴** **Sponsor engagement rate** (`Payer Model!C15`, currently 45%) — drives all per-member sponsor revenue.
+- [ ] **🔴** **Contract renewal rate** (`Payer Model!C17`, currently 85%) — biggest swing in contract LTV. No evidence behind it yet.
+
+### 🔵 Decisions needed
+
+- [ ] **🔵** **Price point: $49 vs $69 vs $99.** Price sensitivity is modeled on the Unit Economics tab. $49 does not clear 3x LTV:CAC on paid B2C even at 15-month scope. **Fold into the WTP study.**
+- [ ] **🔵** Latch Module illustration scope: full dual-POV ($19K–37K) vs. Mother's POV limited to Phase 5–6 (~$15K–29K). See `BuyVsBuild_Latch_Comparison_Module.docx`. **Still not in the model — potentially the largest single cost.**
+- [ ] **🔵** Whether to pursue the payer/employer route now or after the referral channel produces outcomes data. *Recommended sequence: prove engagement + outcomes via IBCLC referral → package the evidence → sell employers → then health plans.*
+
+### Still open
+
+- [ ] Add cash-flow timeline column: map each cost line to the phase/week incurred (aligns with BvB 24-week timeline). Blocked on the illustration scope decision.
+- [ ] Set a pre-launch spend ceiling and flag items that would breach it. *Current model: peak cash need is **−$8,277** (Base), breakeven **M12**.*
+- [ ] Identify costs deferrable to post-revenue without blocking v1 launch.
+- [ ] **Payer ROI calculator** — let a benefits leader plug in their own claims data (avoided ED visits × cost per visit vs. program cost). The pilot section of the value narrative is weak until this exists.
+- [ ] Reconcile marketing spend with the growth curve — flat $750/mo against a growing base means implied CAC drifts (M5: $92/signup → M18: ~$6/signup). Acceptable at v1 scale; revisit when spend becomes a real lever.
+- [ ] **Note:** founder salary is $0 in the model. **Profitability is pre-founder-compensation.** Deliberate (bootstrap), but a reader must know.
+
+### Closed — the original 17 missing inputs
+
+*All filled 2026-07-11. Retained for traceability; see the Assumption Register for each value's source and confidence.*
+
+- [x] #1 Post-M7 growth rate — **superseded** by the referral engine (growth is now derived, not assumed).
+- [x] #2 Paid marketing budget — $750/mo post-launch.
+- [x] #3 Smart-FAQ queries/user/week — 4. *(Low impact: LLM cost is ~$0.06/user on Haiku. Margins ~99.9%.)*
+- [x] #4 B2B2C CAC — $10.
+- [x] #5 B2C CAC high scenario — $65.
+- [x] #6 Founder salary — $0 (bootstrap).
+- [x] #7 IBCLC outreach cost/month — $75 (runs from M1, pre-launch partner recruiting).
+- [x] #8 Supabase upgrade threshold — 500 users *(informational; not wired to COGS)*.
+- [x] #9–11 Phase 0 one-time costs — ruler test $300, Lovable $50, WTP $0 (manual), legal $180.
+- [x] #12 Moms referred per IBCLC/month — 3. **⚠️ Still a placeholder — see MUST VALIDATE above.**
+- [x] #13 Advisor ongoing hours/month — 6 hrs × $75 = $450/mo. *(Main driver pushing breakeven from M9 → M12.)*
+- [x] #14–15 Other SaaS $20/mo; contractor budget $0.
+- [x] #16 Lovable prototype — $50 one-time.
 
 ---
 
